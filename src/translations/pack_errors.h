@@ -183,13 +183,152 @@ static const mm_pack_errors_translations_t mm_pack_errors_translations_en_US = {
     mm_pack_errors_translations_invalid_bool_value_en_US,
 };
 
+// ja_JP strings
+
+static wchar_t *mm_pack_errors_translations_non_relative_path_ja_JP(const wchar_t *path)
+{
+    MM_FORMATTED_STRING_BODY_W(L"非相対パス '%s' が検出されました。", path)
+}
+
+static wchar_t *mm_pack_errors_translations_quoted_path_ja_JP(const wchar_t *path)
+{
+    MM_FORMATTED_STRING_BODY_W(L"クォート付きパス '%s' が検出されました。", path)
+}
+
+static wchar_t *mm_pack_errors_translations_upwards_path_ja_JP(const wchar_t *path)
+{
+    MM_FORMATTED_STRING_BODY_W(L"上位ディレクトリ参照を含むパス '%s' が検出されました。", path)
+}
+
+static wchar_t *mm_pack_errors_translations_nonexistent_file_ja_JP(const wchar_t *path)
+{
+    MM_FORMATTED_STRING_BODY_W(L"パス '%s' のファイルは存在しません。", path)
+}
+
+static wchar_t *mm_pack_errors_translations_file_path_is_dir_ja_JP(const wchar_t *path)
+{
+    MM_FORMATTED_STRING_BODY_W(L"パス '%s' はファイルではなくディレクトリを指しています。", path)
+}
+
+static wchar_t *mm_pack_errors_translations_expand_environ_failed_ja_JP(const wchar_t *path)
+{
+    MM_FORMATTED_STRING_BODY_W(L"パス '%s' の環境変数の展開に失敗しました。", path)
+}
+
+static wchar_t *mm_pack_errors_translations_extern_relative_path_ja_JP(const wchar_t *path)
+{
+    MM_FORMATTED_STRING_BODY_W(L"外部ファイルに対する相対パス '%s' が検出されました。", path)
+}
+
+static wchar_t *mm_pack_errors_translations_invalid_option_value_ja_JP(unsigned int value, const wchar_t *option)
+{
+    MM_FORMATTED_STRING_BODY_W(L"オプション '%s' に対する値 %u は無効です。", option, value)
+}
+
+static wchar_t *mm_pack_errors_translations_value_not_int_ja_JP(const wchar_t *value)
+{
+    MM_FORMATTED_STRING_BODY_W(L"'%s' は整数ではありません。", value)
+}
+
+static wchar_t *mm_pack_errors_translations_negative_int_value_ja_JP(int value)
+{
+    MM_FORMATTED_STRING_BODY_W(L"負の整数値 %d", value)
+}
+
+static wchar_t *mm_pack_errors_translations_garbage_after_int_ja_JP(const wchar_t *str)
+{
+    MM_FORMATTED_STRING_BODY_W(L"数値文字列 '%s' の後に不要な文字があります。", str)
+}
+
+static wchar_t *mm_pack_errors_translations_option_no_equal_ja_JP(const wchar_t *str)
+{
+    MM_FORMATTED_STRING_BODY_W(L"オプション文字列 '%s' に '=' がありません。", str)
+}
+
+static wchar_t *mm_pack_errors_translations_os_too_old_ja_JP(unsigned int pack_build, unsigned int user_build)
+{
+    MM_FORMATTED_STRING_BODY_W(L"このパックは最低でも Windows ビルド %u 向けに作成されています。 現在のビルドは %u です。", pack_build, user_build)
+}
+
+static wchar_t *mm_pack_errors_translations_os_too_new_ja_JP(unsigned int pack_build, unsigned int user_build)
+{
+    MM_FORMATTED_STRING_BODY_W(L"このパックは最大で Windows ビルド %u 向けに作成されています。 現在のビルドは %u です。", pack_build, user_build)
+}
+
+static wchar_t *mm_pack_errors_translations_duplicate_option_ja_JP(const wchar_t *option)
+{
+    MM_FORMATTED_STRING_BODY_W(L"オプション '%s' が重複しています。", option)
+}
+
+static wchar_t *mm_pack_errors_translations_unexpected_section_ja_JP(const wchar_t *name)
+{
+    MM_FORMATTED_STRING_BODY_W(L"予期しないセクション '%s' が見つかりました。", name)
+}
+
+static wchar_t *mm_pack_errors_translations_option_arg_no_key_ja_JP(const wchar_t *arg)
+{
+    MM_FORMATTED_STRING_BODY_W(L"不正な形式のオプション引数 '%s' です。'/option:key=value' の形式でキーと値を 指定する必要があります。\n\n例: '/option:Files=1'", arg)
+}
+
+static wchar_t *mm_pack_errors_translations_option_arg_no_value_ja_JP(const wchar_t *arg)
+{
+    MM_FORMATTED_STRING_BODY_W(L"不正な形式のオプション引数 '%s' です。値が指定されていません。", arg)
+}
+
+static wchar_t *mm_pack_errors_translations_option_arg_bad_name_ja_JP(const wchar_t *arg, const wchar_t *name)
+{
+    MM_FORMATTED_STRING_BODY_W(L"不正な形式のオプション引数 '%s' です。無効なオプション名 '%s' が指定されています。", arg, name)
+}
+
+static wchar_t *mm_pack_errors_translations_option_arg_non_number_value_ja_JP(const wchar_t *arg, const wchar_t *value)
+{
+    MM_FORMATTED_STRING_BODY_W(L"不正な形式のオプション引数 '%s' です。オプション値 '%s' を数値として解析できませんでした。", arg, value)
+}
+
+static wchar_t *mm_pack_errors_translations_option_arg_bad_value_ja_JP(const wchar_t *arg, const wchar_t *value)
+{
+    MM_FORMATTED_STRING_BODY_W(L"不正な形式のオプション引数 '%s' です。無効なオプション値 %s が指定されています。", arg, value)
+}
+
+static wchar_t *mm_pack_errors_translations_invalid_bool_value_ja_JP(unsigned int value)
+{
+    MM_FORMATTED_STRING_BODY_W(L"無効なブール値 %u です。", value)
+}
+
+static const mm_pack_errors_translations_t mm_pack_errors_translations_ja_JP = {
+    L"'Pack' セクションが見つかりません。", // no_pack_section
+    mm_pack_errors_translations_non_relative_path_ja_JP,
+    mm_pack_errors_translations_quoted_path_ja_JP,
+    mm_pack_errors_translations_upwards_path_ja_JP,
+    mm_pack_errors_translations_nonexistent_file_ja_JP,
+    mm_pack_errors_translations_file_path_is_dir_ja_JP,
+    mm_pack_errors_translations_expand_environ_failed_ja_JP,
+    mm_pack_errors_translations_extern_relative_path_ja_JP,
+    mm_pack_errors_translations_invalid_option_value_ja_JP,
+    mm_pack_errors_translations_value_not_int_ja_JP,
+    mm_pack_errors_translations_negative_int_value_ja_JP,
+    mm_pack_errors_translations_garbage_after_int_ja_JP,
+    mm_pack_errors_translations_option_no_equal_ja_JP,
+    mm_pack_errors_translations_os_too_old_ja_JP,
+    mm_pack_errors_translations_os_too_new_ja_JP,
+    mm_pack_errors_translations_duplicate_option_ja_JP,
+    mm_pack_errors_translations_unexpected_section_ja_JP,
+    mm_pack_errors_translations_option_arg_no_key_ja_JP,
+    mm_pack_errors_translations_option_arg_no_value_ja_JP,
+    mm_pack_errors_translations_option_arg_bad_name_ja_JP,
+    mm_pack_errors_translations_option_arg_non_number_value_ja_JP,
+    mm_pack_errors_translations_option_arg_bad_value_ja_JP,
+    mm_pack_errors_translations_invalid_bool_value_ja_JP,
+};
+
 static const mm_translation_mapping_t mm_pack_errors_map[] = {
     { (void *)&mm_pack_errors_translations_en_US, "en", "US" },
+    { (void *)&mm_pack_errors_translations_ja_JP, "ja", "JP" },
 };
 
 MM_IMPL const mm_pack_errors_translations_t *mm_get_pack_errors_translations(void)
 {
-    return (const mm_pack_errors_translations_t *)mm_get_translations(mm_pack_errors_map, 1);
+    return (const mm_pack_errors_translations_t *)mm_get_translations(mm_pack_errors_map, 2);
 }
 
 #endif // MSGMAP_IMPL

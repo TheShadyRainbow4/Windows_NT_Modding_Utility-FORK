@@ -55,13 +55,43 @@ static const mm_ini_errors_translations_t mm_ini_errors_translations_en_US = {
     mm_ini_errors_translations_missing_equals_en_US,
 };
 
+// ja_JP strings
+
+static wchar_t *mm_ini_errors_translations_open_failed_ja_JP(const wchar_t *file)
+{
+    MM_FORMATTED_STRING_BODY_W(L"ファイル '%s' を読み取り用に開けませんでした。", file)
+}
+
+static wchar_t *mm_ini_errors_translations_unclosed_section_header_ja_JP(int line)
+{
+    MM_FORMATTED_STRING_BODY_W(L"%d 行目のセクションヘッダーが閉じられていません。", line)
+}
+
+static wchar_t *mm_ini_errors_translations_value_outside_section_ja_JP(int line)
+{
+    MM_FORMATTED_STRING_BODY_W(L"%d 行目でセクション外に値があります。", line)
+}
+
+static wchar_t *mm_ini_errors_translations_missing_equals_ja_JP(int line)
+{
+    MM_FORMATTED_STRING_BODY_W(L"%d 行目に '=' がありません。", line)
+}
+
+static const mm_ini_errors_translations_t mm_ini_errors_translations_ja_JP = {
+    mm_ini_errors_translations_open_failed_ja_JP,
+    mm_ini_errors_translations_unclosed_section_header_ja_JP,
+    mm_ini_errors_translations_value_outside_section_ja_JP,
+    mm_ini_errors_translations_missing_equals_ja_JP,
+};
+
 static const mm_translation_mapping_t mm_ini_errors_map[] = {
     { (void *)&mm_ini_errors_translations_en_US, "en", "US" },
+    { (void *)&mm_ini_errors_translations_ja_JP, "ja", "JP" },
 };
 
 MM_IMPL const mm_ini_errors_translations_t *mm_get_ini_errors_translations(void)
 {
-    return (const mm_ini_errors_translations_t *)mm_get_translations(mm_ini_errors_map, 1);
+    return (const mm_ini_errors_translations_t *)mm_get_translations(mm_ini_errors_map, 2);
 }
 
 #endif // MSGMAP_IMPL

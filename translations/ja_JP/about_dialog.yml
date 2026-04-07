@@ -1,0 +1,7 @@
+dialog_title: Windows NT Modding Utility について
+app_version: バーション %major:u%.%minor:u%.%revision:u%
+app_info:
+  NTMU は Windows のシステムファイルを変更するためのツールです。GNU General Public
+  License (GPL) 3.0 の下で提供される、無料かつオープンソースのソフトウェアです。
+github_link: GitHub リポジトリ
+ok_button: OK

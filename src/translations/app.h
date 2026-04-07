@@ -42,13 +42,29 @@ static const mm_app_translations_t mm_app_translations_en_US = {
     mm_app_translations_bad_argument_en_US,
 };
 
+// ja_JP strings
+
+static wchar_t *mm_app_translations_bad_argument_ja_JP(const wchar_t *arg)
+{
+    MM_FORMATTED_STRING_BODY_W(L"無効な引数 '%s' です。", arg)
+}
+
+static const mm_app_translations_t mm_app_translations_ja_JP = {
+    L"Windows NT Modding Utility", // app_name
+    L"必要な権限の取得に失敗しました。", // privilege_escalation_failed
+    L"一時ディレクトリの作成に失敗しました。", // temp_dir_creation_failed
+    L"パックの引数が不足しています。", // bad_pack_arg
+    mm_app_translations_bad_argument_ja_JP,
+};
+
 static const mm_translation_mapping_t mm_app_map[] = {
     { (void *)&mm_app_translations_en_US, "en", "US" },
+    { (void *)&mm_app_translations_ja_JP, "ja", "JP" },
 };
 
 MM_IMPL const mm_app_translations_t *mm_get_app_translations(void)
 {
-    return (const mm_app_translations_t *)mm_get_translations(mm_app_map, 1);
+    return (const mm_app_translations_t *)mm_get_translations(mm_app_map, 2);
 }
 
 #endif // MSGMAP_IMPL

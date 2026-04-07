@@ -54,13 +54,40 @@ static const mm_unattend_window_translations_t mm_unattend_window_translations_e
     mm_unattend_window_translations_pack_apply_failed_message_en_US,
 };
 
+// ja_JP strings
+
+static wchar_t *mm_unattend_window_translations_applying_pack_ja_JP(const wchar_t *pack_name)
+{
+    MM_FORMATTED_STRING_BODY_W(L"パック \"%s\" を適用中...", pack_name)
+}
+
+static wchar_t *mm_unattend_window_translations_pack_apply_failed_ja_JP(const wchar_t *pack_name)
+{
+    MM_FORMATTED_STRING_BODY_W(L"パック \"%s\" の適用に失敗しました。", pack_name)
+}
+
+static wchar_t *mm_unattend_window_translations_pack_apply_failed_message_ja_JP(const wchar_t *pack_name)
+{
+    MM_FORMATTED_STRING_BODY_W(L"パック \"%s\" の適用に失敗しました。詳細はログを確認してください。", pack_name)
+}
+
+static const mm_unattend_window_translations_t mm_unattend_window_translations_ja_JP = {
+    L"パックを読み込み中...", // loading_pack
+    L"パックの読み込みに失敗しました。", // pack_load_failed
+    L"閉じる(&C)", // close_button
+    mm_unattend_window_translations_applying_pack_ja_JP,
+    mm_unattend_window_translations_pack_apply_failed_ja_JP,
+    mm_unattend_window_translations_pack_apply_failed_message_ja_JP,
+};
+
 static const mm_translation_mapping_t mm_unattend_window_map[] = {
     { (void *)&mm_unattend_window_translations_en_US, "en", "US" },
+    { (void *)&mm_unattend_window_translations_ja_JP, "ja", "JP" },
 };
 
 MM_IMPL const mm_unattend_window_translations_t *mm_get_unattend_window_translations(void)
 {
-    return (const mm_unattend_window_translations_t *)mm_get_translations(mm_unattend_window_map, 1);
+    return (const mm_unattend_window_translations_t *)mm_get_translations(mm_unattend_window_map, 2);
 }
 
 #endif // MSGMAP_IMPL

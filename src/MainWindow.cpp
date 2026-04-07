@@ -378,8 +378,8 @@ void CMainWindow::_OnCreate()
 
 	static LPCWSTR s_rgMetaNames[MI_COUNT] = {
 		_pTranslations->pack_name,
-		_pTranslations->pack_version,
 		_pTranslations->pack_author,
+		_pTranslations->pack_version,
 	};
 
 	for (int i = 0; i < MI_COUNT; i++)

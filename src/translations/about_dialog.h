@@ -42,13 +42,29 @@ static const mm_about_dialog_translations_t mm_about_dialog_translations_en_US =
     mm_about_dialog_translations_app_version_en_US,
 };
 
+// ja_JP strings
+
+static wchar_t *mm_about_dialog_translations_app_version_ja_JP(unsigned int major, unsigned int minor, unsigned int revision)
+{
+    MM_FORMATTED_STRING_BODY_W(L"バーション %u.%u.%u", major, minor, revision)
+}
+
+static const mm_about_dialog_translations_t mm_about_dialog_translations_ja_JP = {
+    L"Windows NT Modding Utility について", // dialog_title
+    L"NTMU は Windows のシステムファイルを変更するためのツールです。GNU General Public License (GPL) 3.0 の下で提供される、無料かつオープンソースのソフトウェアです。", // app_info
+    L"GitHub リポジトリ", // github_link
+    L"OK", // ok_button
+    mm_about_dialog_translations_app_version_ja_JP,
+};
+
 static const mm_translation_mapping_t mm_about_dialog_map[] = {
     { (void *)&mm_about_dialog_translations_en_US, "en", "US" },
+    { (void *)&mm_about_dialog_translations_ja_JP, "ja", "JP" },
 };
 
 MM_IMPL const mm_about_dialog_translations_t *mm_get_about_dialog_translations(void)
 {
-    return (const mm_about_dialog_translations_t *)mm_get_translations(mm_about_dialog_map, 1);
+    return (const mm_about_dialog_translations_t *)mm_get_translations(mm_about_dialog_map, 2);
 }
 
 #endif // MSGMAP_IMPL

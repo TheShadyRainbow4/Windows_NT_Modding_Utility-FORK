@@ -1,0 +1,36 @@
+menu_file: "ファイル(&F)"
+menu_file_open: "パックを開く(&O)...\tCtrl+O"
+menu_file_unload: "パックをアンロード(&W)...\tCtrl+W"
+menu_file_exit: "終了(&X)\tAlt+F4"
+
+menu_tools: "ツール(&T)"
+menu_tools_restart_explorer: "エクスプローラーを再起動(&R)"
+menu_tools_clear_icon_cache: "アイコンやサムネイルのキャッシュをクリア(&C)"
+menu_tools_system_restore: "システムの復元の管理(&S)..."
+
+menu_help: "ヘルプ(&H)"
+menu_help_topics: "ヘルプ トピック(&H)..."
+menu_help_get_packs: "パックを入手(&G)..."
+menu_help_about: "Windows NT Modding Utility について(&A)..."
+
+pack_name: "名前:"
+pack_author: "作者:"
+pack_version: "バージョン:"
+apply_button: "適用(&A)"
+no_preview: "プレビューなし"
+no_readme: "このパックには README がありません"
+no_options: "このパックにはオプションがありません"
+no_pack_loaded: "パックが読み込まれていません"
+not_specified: "（未指定）"
+# Any hashtag character here will be replaced with a null character at runtime.
+pack_file_filter: INI ファイル (*.ini)#*.ini#すべてのファイル (*.*)#*.*##
+pack_apply_warning:
+  "パックを適用すると、システムファイルやレジストリエントリが変更される可能性があります。
+  選択したパックがこれらを変更する場合、以下を推奨します:\n
+  
+  - 復元ポイントを作成する（ツール -> システムの復元の管理...）\n\
+  - Windows Update を無効化する（外部ツールで実行可能）\n
+  
+  続行しますか？"
+pack_apply_successful: パックの適用が正常に完了しました。
+pack_apply_failed: 選択したパックの適用に失敗しました。詳細はログを確認してください。

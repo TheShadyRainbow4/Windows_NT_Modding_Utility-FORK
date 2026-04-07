@@ -77,13 +77,44 @@ static const mm_main_window_translations_t mm_main_window_translations_en_US = {
     L"Failed to apply the selected pack. See the log for more details.", // pack_apply_failed
 };
 
+// ja_JP strings
+
+static const mm_main_window_translations_t mm_main_window_translations_ja_JP = {
+    L"ファイル(&F)", // menu_file
+    L"パックを開く(&O)...\tCtrl+O", // menu_file_open
+    L"パックをアンロード(&W)...\tCtrl+W", // menu_file_unload
+    L"終了(&X)\tAlt+F4", // menu_file_exit
+    L"ツール(&T)", // menu_tools
+    L"エクスプローラーを再起動(&R)", // menu_tools_restart_explorer
+    L"アイコンやサムネイルのキャッシュをクリア(&C)", // menu_tools_clear_icon_cache
+    L"システムの復元の管理(&S)...", // menu_tools_system_restore
+    L"ヘルプ(&H)", // menu_help
+    L"ヘルプ トピック(&H)...", // menu_help_topics
+    L"パックを入手(&G)...", // menu_help_get_packs
+    L"Windows NT Modding Utility について(&A)...", // menu_help_about
+    L"名前:", // pack_name
+    L"作者:", // pack_author
+    L"バージョン:", // pack_version
+    L"適用(&A)", // apply_button
+    L"プレビューなし", // no_preview
+    L"このパックには README がありません", // no_readme
+    L"このパックにはオプションがありません", // no_options
+    L"パックが読み込まれていません", // no_pack_loaded
+    L"（未指定）", // not_specified
+    L"INI ファイル (*.ini)#*.ini#すべてのファイル (*.*)#*.*##", // pack_file_filter
+    L"パックを適用すると、システムファイルやレジストリエントリが変更される可能性があります。 選択したパックがこれらを変更する場合、以下を推奨します:\n\n- 復元ポイントを作成する（ツール -> システムの復元の管理...）\n- Windows Update を無効化する（外部ツールで実行可能）\n\n続行しますか？", // pack_apply_warning
+    L"パックの適用が正常に完了しました。", // pack_apply_successful
+    L"選択したパックの適用に失敗しました。詳細はログを確認してください。", // pack_apply_failed
+};
+
 static const mm_translation_mapping_t mm_main_window_map[] = {
     { (void *)&mm_main_window_translations_en_US, "en", "US" },
+    { (void *)&mm_main_window_translations_ja_JP, "ja", "JP" },
 };
 
 MM_IMPL const mm_main_window_translations_t *mm_get_main_window_translations(void)
 {
-    return (const mm_main_window_translations_t *)mm_get_translations(mm_main_window_map, 1);
+    return (const mm_main_window_translations_t *)mm_get_translations(mm_main_window_map, 2);
 }
 
 #endif // MSGMAP_IMPL

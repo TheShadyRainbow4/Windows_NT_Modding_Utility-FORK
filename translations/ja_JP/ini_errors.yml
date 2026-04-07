@@ -1,0 +1,4 @@
+open_failed: ファイル '%file:s%' を読み取り用に開けませんでした。
+unclosed_section_header: "%line:d% 行目のセクションヘッダーが閉じられていません。"
+value_outside_section: "%line:d% 行目でセクション外に値があります。"
+missing_equals: "%line:d% 行目に '=' がありません。"

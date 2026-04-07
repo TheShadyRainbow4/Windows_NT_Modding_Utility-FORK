@@ -1,0 +1,7 @@
+# This probably shouldn't be translated. It is just here for convenience, since
+# all of the application's other strings are used in this translations system.
+app_name: Windows NT Modding Utility
+privilege_escalation_failed: 必要な権限の取得に失敗しました。
+temp_dir_creation_failed: 一時ディレクトリの作成に失敗しました。
+bad_pack_arg: パックの引数が不足しています。
+bad_argument: 無効な引数 '%arg:s%' です。

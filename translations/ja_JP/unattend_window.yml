@@ -1,0 +1,6 @@
+loading_pack: パックを読み込み中...
+pack_load_failed: パックの読み込みに失敗しました。
+applying_pack: パック "%pack_name:s%" を適用中...
+pack_apply_failed: パック "%pack_name:s%" の適用に失敗しました。
+pack_apply_failed_message: パック "%pack_name:s%" の適用に失敗しました。詳細はログを確認してください。
+close_button: "閉じる(&C)"
