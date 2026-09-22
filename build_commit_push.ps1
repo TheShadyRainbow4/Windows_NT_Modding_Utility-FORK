@@ -27,7 +27,8 @@ Set-AuthenticodeSignature -FilePath "x64\Debug\WinNTMU.exe" -Certificate $cert -
 
 Write-Host "Builds completed successfully. Adding changes to git..."
 git add .
-git commit -m "Auto-commit: Version bump and latest changes"
+# We use SilentlyContinue in case there are no changes to commit
+git commit -m "Auto-commit: Version bump and latest changes" | Out-Null
 
 Write-Host "Pushing to remote repo..."
 git push origin HEAD
@@ -42,7 +43,7 @@ $commitMsg = git log -1 --pretty=%B
 Write-Host "Publishing GitHub Release v$version..."
 $ghPath = "C:\Program Files\GitHub CLI\gh.exe"
 if (Test-Path $ghPath) {
-    & $ghPath release create "v$version" "x64\Release\WinNTMU.exe" -t "Release v$version" -n $commitMsg
+    & $ghPath release create "v$version" "x64\Release\WinNTMU.exe" -t "Release v$version" -n $commitMsg -R "TheShadyRainbow4/Windows_NT_Modding_Utility-FORK"
 } else {
     Write-Host "GitHub CLI not found. Please install gh to automatically publish releases."
 }

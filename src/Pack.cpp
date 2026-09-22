@@ -1030,19 +1030,21 @@ bool CPack::CreateReversePack(LPCWSTR outPath)
 					continue;
 				}
 
-				WCHAR szFileName[MAX_PATH];
-				wcscpy_s(szFileName, PathFindFileNameW(item.destFile.c_str()));
-
-				WCHAR szBackupFileName[MAX_PATH];
-				swprintf_s(szBackupFileName, MAX_PATH, L"%d_%s", backupFileIndex++, szFileName);
+				LPCWSTR pszRelPath = PathSkipRootW(item.destFile.c_str());
+				if (!pszRelPath) pszRelPath = PathFindFileNameW(item.destFile.c_str());
 
 				WCHAR szBackupDest[MAX_PATH];
 				wcscpy_s(szBackupDest, szBackupFiles);
-				PathCchAppend(szBackupDest, MAX_PATH, szBackupFileName);
+				PathCchAppend(szBackupDest, MAX_PATH, pszRelPath);
+
+				WCHAR szBackupDestDir[MAX_PATH];
+				wcscpy_s(szBackupDestDir, szBackupDest);
+				PathCchRemoveFileSpec(szBackupDestDir, MAX_PATH);
+				SHCreateDirectoryExW(NULL, szBackupDestDir, nullptr);
 
 				if (CopyFileW(item.destFile.c_str(), szBackupDest, FALSE))
 				{
-					fwprintf(fp, L"%s=BackupFiles\\%s\n", item.destFile.c_str(), szBackupFileName);
+					fwprintf(fp, L"%s=BackupFiles\\%s\n", item.destFile.c_str(), pszRelPath);
 				}
 			}
 			fwprintf(fp, L"\n");
