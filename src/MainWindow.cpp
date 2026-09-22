@@ -9,8 +9,9 @@
 
 #include "Util.h"
 
-const WCHAR c_szHelpURL[] = L"https://github.com/get-ntmu/NTMU/wiki";
+const WCHAR c_szHelpURL[] = L"https://github.com/TheShadyRainbow4/Windows_NT_Modding_Utility-FORK";
 const WCHAR c_szGetPacksURL[] = L"https://get-ntmu.github.io//#!/packs";
+const WCHAR c_szGetMyPacksURL[] = L"https://github.com/TheShadyRainbow4/WinNTMU_Packs-EliteSoftware";
 
 LRESULT CMainWindow::v_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -132,8 +133,12 @@ LRESULT CMainWindow::v_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 				}
 				case IDM_HELPTOPICS:
 				case IDM_HELPGETPACKS:
+				case IDM_HELPGETMYPACKS:
 				{
-					LPCWSTR pszURL = (LOWORD(wParam) == IDM_HELPTOPICS) ? c_szHelpURL : c_szGetPacksURL;
+					LPCWSTR pszURL = c_szHelpURL;
+					if (LOWORD(wParam) == IDM_HELPGETPACKS) pszURL = c_szGetPacksURL;
+					else if (LOWORD(wParam) == IDM_HELPGETMYPACKS) pszURL = c_szGetMyPacksURL;
+					
 					ShellExecuteW(
 						NULL, L"open",
 						pszURL, nullptr,
@@ -346,6 +351,7 @@ void CMainWindow::_CreateMenu()
 	BEGIN_SUBMENU()
 		MENU_ITEM(IDM_HELPTOPICS,                        help_topics)
 		MENU_ITEM(IDM_HELPGETPACKS,                   help_get_packs)
+		AppendMenuW(hmenuSub, 0, IDM_HELPGETMYPACKS, L"&Get EliteSoftware Packs...");
 		MENU_ITEM(IDM_HELPABOUT,                          help_about)
 	END_SUBMENU(help)
 

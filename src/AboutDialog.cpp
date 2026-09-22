@@ -1,7 +1,7 @@
 #include "AboutDialog.h"
 #include "Util.h"
 
-const WCHAR c_szGitHubURL[] = L"https://github.com/get-ntmu/NTMU";
+const WCHAR c_szGitHubURL[] = L"https://github.com/TheShadyRainbow4/Windows_NT_Modding_Utility-FORK";
 
 CAboutDialog::CAboutDialog()
 	: _hwndIcon(NULL)
@@ -75,6 +75,11 @@ void CAboutDialog::_OnCreate()
 {
 	SetWindowTextW(_hwnd, _pTranslations->dialog_title);
 
+	HICON hIconAbout = (HICON)LoadImageW(g_hinst, MAKEINTRESOURCEW(IDI_ABOUT), IMAGE_ICON, 
+		GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), LR_DEFAULTCOLOR);
+	SendMessageW(_hwnd, WM_SETICON, ICON_SMALL, (LPARAM)hIconAbout);
+	SendMessageW(_hwnd, WM_SETICON, ICON_BIG, (LPARAM)hIconAbout);
+
 	_hwndIcon = CreateWindowExW(
 		0, L"STATIC", nullptr,
 		SS_ICON | WS_CHILD | WS_VISIBLE,
@@ -84,7 +89,7 @@ void CAboutDialog::_OnCreate()
 
 	_hwndAppName = CreateWindowExW(
 		0, L"STATIC", g_pAppTranslations->app_name,
-		WS_CHILD | WS_VISIBLE,
+		WS_CHILD | WS_VISIBLE | SS_CENTER,
 		0, 0, 0, 0,
 		_hwnd, NULL, g_hinst, nullptr
 	);
@@ -93,7 +98,7 @@ void CAboutDialog::_OnCreate()
 
 	_hwndAppVersion = CreateWindowExW(
 		0, L"STATIC", spszVersionText,
-		WS_CHILD | WS_VISIBLE,
+		WS_CHILD | WS_VISIBLE | SS_CENTER,
 		0, 0, 0, 0,
 		_hwnd, NULL, g_hinst, nullptr
 	);
@@ -101,7 +106,7 @@ void CAboutDialog::_OnCreate()
 	_hwndAppInfo = CreateWindowExW(
 		0, L"STATIC", 
 		_pTranslations->app_info,
-		WS_CHILD | WS_VISIBLE,
+		WS_CHILD | WS_VISIBLE | SS_CENTER,
 		0, 0, 0, 0,
 		_hwnd, NULL, g_hinst, nullptr
 	);
@@ -172,11 +177,13 @@ void CAboutDialog::_UpdateMetrics()
 void CAboutDialog::_UpdateLayout()
 {
 	constexpr int c_duDialogWidth  = (c_duMargin * 3) + c_duLabelWidth;
-	constexpr int c_duDialogHeight = (c_duLabelHeight * 6) + (c_duMargin * 3) + (c_duLabelMargin * 2);
+	constexpr int c_duDialogHeight = (c_duLabelHeight * 6) + (c_duMargin * 7) + (c_duLabelMargin * 2) + c_duButtonHeight;
+	const int totalW = _cxIcon + _XDUToXPix(c_duDialogWidth);
+	const int totalH = _cyIcon + _YDUToYPix(c_duDialogHeight);
 	RECT rc = {
 		0, 0,
-		_cxIcon + _XDUToXPix(c_duDialogWidth),
-		_cyIcon + _YDUToYPix(c_duDialogHeight)
+		totalW,
+		totalH
 	};
 	DPIHelpers::AdjustWindowRectForDPI(&rc, WS_CAPTION | WS_SYSMENU, 0, FALSE, _dpi);
 	SetWindowPos(
@@ -189,57 +196,66 @@ void CAboutDialog::_UpdateLayout()
 
 	HDWP hdwp = BeginDeferWindowPos(c_numLayoutWindows);
 
+	int currentY = _YDUToYPix(c_duMargin);
+
 	hdwp = DeferWindowPos(
 		hdwp, _hwndIcon, NULL,
-		_XDUToXPix(c_duMargin), _YDUToYPix(c_duMargin),
+		(totalW - _cxIcon) / 2, currentY,
 		_cxIcon, _cyIcon,
 		SWP_NOZORDER
 	);
 
-	const int labelX = _cxIcon + _XDUToXPix(c_duMargin * 2);
+	currentY += _cyIcon + _YDUToYPix(c_duMargin);
+	
 	const int labelWidth = _XDUToXPix(c_duLabelWidth);
 	const int labelHeight = _YDUToYPix(c_duLabelHeight);
 	
 	hdwp = DeferWindowPos(
 		hdwp, _hwndAppName, NULL,
-		labelX, _YDUToYPix(c_duMargin),
+		(totalW - labelWidth) / 2, currentY,
 		labelWidth, labelHeight,
 		SWP_NOZORDER
 	);
+
+	currentY += labelHeight + _YDUToYPix(c_duLabelMargin);
 
 	hdwp = DeferWindowPos(
 		hdwp, _hwndAppVersion, NULL,
-		labelX, _YDUToYPix(c_duMargin + c_duLabelHeight + c_duLabelMargin),
+		(totalW - labelWidth) / 2, currentY,
 		labelWidth, labelHeight,
 		SWP_NOZORDER
 	);
 
-	const int wideLabelX = _XDUToXPix(c_duMargin);
-	const int wideLabelWidth = _cxIcon + _XDUToXPix(c_duMargin + c_duLabelWidth);
+	currentY += labelHeight + _YDUToYPix(c_duMargin);
+
+	const int wideLabelWidth = totalW - _XDUToXPix(c_duMargin * 2);
 
 	hdwp = DeferWindowPos(
 		hdwp, _hwndAppInfo, NULL,
-		wideLabelX, _cyIcon + _YDUToYPix(c_duMargin * 2),
+		(totalW - wideLabelWidth) / 2, currentY,
 		wideLabelWidth, _YDUToYPix(c_duLabelHeight * 3),
 		SWP_NOZORDER
 	);
 
-	constexpr int c_duGitHubLinkY = (c_duLabelHeight * 3) + (c_duMargin * 2) + c_duLabelMargin;
+	currentY += _YDUToYPix(c_duLabelHeight * 3) + _YDUToYPix(c_duMargin);
 
+	const int linkWidth = _XDUToXPix(80);
 	hdwp = DeferWindowPos(
 		hdwp, _hwndGitHubLink, NULL,
-		wideLabelX, _cyIcon + _YDUToYPix(c_duGitHubLinkY),
-		wideLabelWidth, labelHeight,
+		(totalW - linkWidth) / 2, currentY,
+		linkWidth, labelHeight,
 		SWP_NOZORDER
 	);
 
-	constexpr int c_duOKButtonX = c_duDialogWidth - c_duButtonMargin - c_duButtonWidth;
-	constexpr int c_duOKButtonY = c_duDialogHeight - c_duButtonMargin - c_duButtonHeight;
+	currentY += labelHeight + _YDUToYPix(c_duMargin);
+
+	const int buttonWidth = _XDUToXPix(c_duButtonWidth);
+	const int buttonHeight = _YDUToYPix(c_duButtonHeight);
 
 	hdwp = DeferWindowPos(
 		hdwp, _hwndOKButton, NULL,
-		_cxIcon + _XDUToXPix(c_duOKButtonX), _cyIcon + _YDUToYPix(c_duOKButtonY),
-		_XDUToXPix(c_duButtonWidth), _YDUToYPix(c_duButtonHeight),
+		(totalW - buttonWidth) / 2, currentY,
+		buttonWidth, buttonHeight,
 		SWP_NOZORDER
 	);
 

@@ -2,15 +2,16 @@
 #include "Resource.h"
 
 IDI_NTMU  ICON  "res\\ntmu.ico"
+IDI_ABOUT ICON  "res\\ABOUT.ico"
 
 #include <ntverp.h>
 #define VER_FILETYPE                    VFT_APP
 #define VER_FILESUBTYPE                 VFT_UNKNOWN
 #undef  VER_COMPANYNAME_STR
-#define VER_COMPANYNAME_STR             "aubymori"
+#define VER_COMPANYNAME_STR             "EliteSoftware Tech Co."
 #undef  VER_PRODUCTNAME_STR
-#define VER_PRODUCTNAME_STR             "Windows NT Modding Utility"
-#define VER_FILEDESCRIPTION_STR         "Windows NT Modding Utility"
+#define VER_PRODUCTNAME_STR             "WinNTMU | EliteSoftware Edition"
+#define VER_FILEDESCRIPTION_STR         "WinNTMU | EliteSoftware Edition"
 #define VER_INTERNALNAME_STR            "NTMU"
 #define VER_LEGALCOPYRIGHT_YEARS        "2025"
 #define VER_ORIGINALFILENAME_STR        "NTMU.exe"

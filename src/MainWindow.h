@@ -17,7 +17,8 @@ static constexpr WCHAR c_szMainWindowClass[] = L"NTMU_MainWindow";
 #define IDM_TOOLSSYSRESTORE    206
 #define IDM_HELPTOPICS         207
 #define IDM_HELPGETPACKS       208
-#define IDM_HELPABOUT          209
+#define IDM_HELPGETMYPACKS     209
+#define IDM_HELPABOUT          210
 
 class CMainWindow : public CNTMUWindowBase<CMainWindow, c_szMainWindowClass>
 {
