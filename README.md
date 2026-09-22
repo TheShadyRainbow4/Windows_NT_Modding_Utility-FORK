@@ -6,6 +6,8 @@ THIS IS A FORK (I Will still include all links to original Repo / Packs) The Win
 
 ![Preview](UAC-Prompt.png)
 
+![Preview](Ui_Screenshot.png)
+
 ## Features
 
 - Replacing/adding resources in executable files
@@ -18,9 +20,9 @@ THIS IS A FORK (I Will still include all links to original Repo / Packs) The Win
 
 You can get packs at:
 
-## [NTMU Dedicated Site](https://get-ntmu.github.io/#!/packs).
+## [NTMU Official Dedicated Site](https://get-ntmu.github.io/#!/packs).
 
-## [EliteSoftware Packs Repo](https://github.com/TheShadyRainbow4/WinNTMU_Packs-EliteSoftware).
+## [EliteSoftware WinNTMU Packs](https://github.com/TheShadyRainbow4/WinNTMU_Packs-EliteSoftware).
 
 
 
