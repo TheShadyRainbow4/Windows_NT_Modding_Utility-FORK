@@ -5,7 +5,7 @@
 
 #define VER_MAJOR                2
 #define VER_MINOR                0
-#define VER_REVISION             1
+#define VER_REVISION             2
 
 #define VER_STRING \
     STRINGIZE(VER_MAJOR) "." STRINGIZE(VER_MINOR) "." STRINGIZE(VER_REVISION)
