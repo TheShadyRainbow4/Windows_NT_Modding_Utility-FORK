@@ -24,6 +24,7 @@
     <ProjectGuid>{a7b7a6dd-6c71-4bec-81fd-e62233b8a277}</ProjectGuid>
     <RootNamespace>NTMU</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <TargetName>WinNTMU</TargetName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
