@@ -5,9 +5,19 @@
 #include "AboutDialog.h"
 #include <locale>
 #include <codecvt>
+#include "INI.h"
+#include <commdlg.h>
+#include <shellapi.h>
+#include <shlwapi.h>
+#include <shlobj.h>
 #include <pathcch.h>
+#include <tlhelp32.h>
+#include <mmsystem.h>
+#pragma comment(lib, "winmm.lib")
 
 #include "Util.h"
+#include <shlwapi.h>
+#pragma comment(lib, "shlwapi.lib")
 
 const WCHAR c_szHelpURL[] = L"https://github.com/TheShadyRainbow4/Windows_NT_Modding_Utility-FORK";
 const WCHAR c_szGetPacksURL[] = L"https://get-ntmu.github.io//#!/packs";
@@ -65,7 +75,7 @@ LRESULT CMainWindow::v_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 					if (GetOpenFileNameW(&ofn))
 					{
 						_UnloadPack();
-						_LoadPack(szFilePath, LoadSource::Default);
+						_HandleLoadPath(szFilePath, LoadSource::Default);
 					}
 					break;
 				}
@@ -129,6 +139,34 @@ LRESULT CMainWindow::v_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 
 					TerminateProcess(hProcess, 0);
 					CloseHandle(hProcess);
+					break;
+				}
+				case IDM_TOOLSCREATEREVERSEPACK:
+				{
+					if (_pack.GetName().empty())
+					{
+						MainWndMsgBox(L"No pack loaded.", MB_ICONERROR);
+						break;
+					}
+					
+					BROWSEINFOW bi = { 0 };
+					bi.hwndOwner = hWnd;
+					bi.lpszTitle = L"Select folder to save reverse pack:";
+					bi.ulFlags = BIF_RETURNONLYFSDIRS | BIF_NEWDIALOGSTYLE;
+					
+					LPITEMIDLIST pidl = SHBrowseForFolderW(&bi);
+					if (pidl != 0)
+					{
+						WCHAR szPath[MAX_PATH];
+						if (SHGetPathFromIDListW(pidl, szPath))
+						{
+							if (_pack.CreateReversePack(szPath))
+								MainWndMsgBox(L"Reverse pack created successfully.", MB_ICONINFORMATION);
+							else
+								MainWndMsgBox(L"Failed to create reverse pack.", MB_ICONERROR);
+						}
+						CoTaskMemFree(pidl);
+					}
 					break;
 				}
 				case IDM_TOOLSSYSRESTORE:
@@ -203,6 +241,21 @@ LRESULT CMainWindow::v_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 		case WM_NOTIFY:
 		{
 			UINT uCode = ((LPNMHDR)lParam)->code;
+			HWND hwndFrom = ((LPNMHDR)lParam)->hwndFrom;
+
+			if (hwndFrom == _hwndStatusBar && uCode == NM_CLICK)
+			{
+				LPNMMOUSE pnm = (LPNMMOUSE)lParam;
+				if (pnm->dwItemSpec == 2)
+				{
+					WCHAR szExePath[MAX_PATH];
+					GetModuleFileNameW(NULL, szExePath, MAX_PATH);
+					PathCchRemoveFileSpec(szExePath, MAX_PATH);
+					PathCchAppend(szExePath, MAX_PATH, L"WinNTMU.log");
+					ShellExecuteW(NULL, L"open", szExePath, NULL, NULL, SW_SHOWNORMAL);
+				}
+				return 0;
+			}
 			switch (uCode)
 			{
 				// Prevent user from collapsing radio options
@@ -320,7 +373,7 @@ LRESULT CMainWindow::v_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 				if (DragQueryFileW((HDROP)wParam, 0, szFile, ARRAYSIZE(szFile)))
 				{
 					_UnloadPack();
-					_LoadPack(szFile, LoadSource::Default);
+					_HandleLoadPath(szFile, LoadSource::Default);
 				}
 			}
 			return 0;
@@ -359,6 +412,7 @@ void CMainWindow::_CreateMenu()
 		MENU_ITEM(IDM_TOOLSKILLEXPLORER,      tools_restart_explorer)
 		MENU_ITEM(IDM_TOOLSCLEARICOCACHE,     tools_clear_icon_cache)
 		MENU_ITEM(IDM_TOOLSSYSRESTORE,          tools_system_restore)
+		AppendMenuW(hmenuSub, 0, IDM_TOOLSCREATEREVERSEPACK, L"Create Reverse Pack...");
 	END_SUBMENU(tools)
 
 	BEGIN_SUBMENU()
@@ -429,6 +483,7 @@ void CMainWindow::_OnCreate()
 		WS_CHILD | WS_VISIBLE, 0, 0, 0, 0,
 		_hwnd, (HMENU)IDC_APPLY, NULL, NULL
 	);
+	SendMessageW(_hwndApply, BCM_SETSHIELD, 0, TRUE);
 	EnableWindow(_hwndApply, FALSE);
 
 	_hwndStatusBar = CreateWindowExW(
@@ -438,13 +493,14 @@ void CMainWindow::_OnCreate()
 		_hwnd, (HMENU)2000, g_hinst, NULL
 	);
 	
-	int parts[] = { 100, -1 };
-	SendMessageW(_hwndStatusBar, SB_SETPARTS, 2, (LPARAM)parts);
+	int parts[] = { 100, 200, -1 };
+	SendMessageW(_hwndStatusBar, SB_SETPARTS, 3, (LPARAM)parts);
 	
 	WCHAR szVer[64];
 	swprintf_s(szVer, L"Version %d.%d.%d.0", VER_MAJOR, VER_MINOR, VER_REVISION);
 	SendMessageW(_hwndStatusBar, SB_SETTEXTW, 0, (LPARAM)L"Ready");
 	SendMessageW(_hwndStatusBar, SB_SETTEXTW, 1, (LPARAM)szVer);
+	SendMessageW(_hwndStatusBar, SB_SETTEXTW, 2, (LPARAM)L"View WinNTMU Logs");
 
 	_hwndText = CreateWindowExW(
 		WS_EX_CLIENTEDGE, WC_EDITW, nullptr,
@@ -508,7 +564,7 @@ void CMainWindow::_OnCreate()
 	// open that pack.
 	if (NULL != g_szInitialPack[0])
 	{
-		_LoadPack(g_szInitialPack, LoadSource::CommandLine);
+		_HandleLoadPath(g_szInitialPack, LoadSource::CommandLine);
 	}
 }
 
@@ -663,8 +719,8 @@ void CMainWindow::_UpdateLayout()
 		GetWindowRect(_hwndStatusBar, &rcStatus);
 		rcClient.bottom -= RECTHEIGHT(rcStatus);
 
-		int parts[] = { RECTWIDTH(rcClient) - 150, -1 };
-		SendMessageW(_hwndStatusBar, SB_SETPARTS, 2, (LPARAM)parts);
+		int parts[] = { RECTWIDTH(rcClient) - 250, RECTWIDTH(rcClient) - 150, -1 };
+		SendMessageW(_hwndStatusBar, SB_SETPARTS, 3, (LPARAM)parts);
 	}
 
 	const int marginX = _XDUToXPix(6);
@@ -744,6 +800,41 @@ void CMainWindow::_UpdateLayout()
 	InvalidateRect(_hwndPreview, nullptr, TRUE);
 
 	EndDeferWindowPos(hdwp);
+}
+
+
+void CMainWindow::_HandleLoadPath(LPCWSTR szPath, LoadSource loadSource)
+{
+	DWORD attrs = GetFileAttributesW(szPath);
+	if (attrs == INVALID_FILE_ATTRIBUTES) return;
+
+	if (attrs & FILE_ATTRIBUTE_DIRECTORY) {
+		WCHAR szIni[MAX_PATH];
+		wcscpy_s(szIni, szPath);
+		PathCchAppend(szIni, MAX_PATH, L"pack.ini");
+		_LoadPack(szIni, loadSource);
+	} else {
+		LPCWSTR ext = PathFindExtensionW(szPath);
+		if (ext && _wcsicmp(ext, L".zip") == 0) {
+			WCHAR cmd[MAX_PATH * 3];
+			swprintf_s(cmd, MAX_PATH * 3, L"tar.exe -xf \"%s\" -C \"%s\"", szPath, g_szTempDir);
+			
+			STARTUPINFOW si = { sizeof(si) };
+			PROCESS_INFORMATION pi;
+			if (CreateProcessW(NULL, cmd, NULL, NULL, FALSE, CREATE_NO_WINDOW, NULL, NULL, &si, &pi)) {
+				WaitForSingleObject(pi.hProcess, INFINITE);
+				CloseHandle(pi.hProcess);
+				CloseHandle(pi.hThread);
+			}
+			
+			WCHAR szIni[MAX_PATH];
+			wcscpy_s(szIni, g_szTempDir);
+			PathCchAppend(szIni, MAX_PATH, L"pack.ini");
+			_LoadPack(szIni, loadSource);
+		} else {
+			_LoadPack(szPath, loadSource);
+		}
+	}
 }
 
 void CMainWindow::_LoadPack(LPCWSTR pszPath, LoadSource loadSource)
@@ -1004,8 +1095,17 @@ void CMainWindow::_ApplyPackWorker()
 
 	_fApplying = true;
 
+	WCHAR szDefaultBackupPath[MAX_PATH];
+	swprintf_s(szDefaultBackupPath, MAX_PATH, L"C:\\WinNTMU_Backups\\%s", _pack.GetName().c_str());
+	if (GetFileAttributesW(szDefaultBackupPath) == INVALID_FILE_ATTRIBUTES)
+	{
+		SHCreateDirectoryExW(NULL, szDefaultBackupPath, nullptr);
+	}
+	_pack.CreateReversePack(szDefaultBackupPath);
+
 	if (_pack.Apply(this, s_ApplyProgressCallback))
 	{
+		PlaySoundW(MAKEINTRESOURCEW(IDR_WAV_COMPLETE), GetModuleHandleW(NULL), SND_RESOURCE | SND_ASYNC);
 		MainWndMsgBox(_pTranslations->pack_apply_successful, MB_ICONINFORMATION);
 		_LoadReadme();
 	}

@@ -3,6 +3,7 @@
 
 IDI_NTMU  ICON  "res\\ntmu.ico"
 IDI_ABOUT ICON  "res\\ABOUT.ico"
+IDR_WAV_COMPLETE WAVE "res\\Complete.wav"
 
 #include <ntverp.h>
 #define VER_FILETYPE                    VFT_APP

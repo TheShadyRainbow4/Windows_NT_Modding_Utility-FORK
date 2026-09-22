@@ -12,3 +12,5 @@
 
 #define IDI_NTMU               100
 #define IDI_ABOUT              101
+#define IDR_COMPLETE_WAV       102
+#define IDR_WAV_COMPLETE       200

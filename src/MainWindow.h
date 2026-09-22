@@ -19,6 +19,7 @@ static constexpr WCHAR c_szMainWindowClass[] = L"NTMU_MainWindow";
 #define IDM_HELPGETPACKS       208
 #define IDM_HELPGETMYPACKS     209
 #define IDM_HELPABOUT          210
+#define IDM_TOOLSCREATEREVERSEPACK 211
 
 class CMainWindow : public CNTMUWindowBase<CMainWindow, c_szMainWindowClass>
 {
@@ -96,6 +97,7 @@ private:
 		CommandLine,
 	};
 
+	void _HandleLoadPath(LPCWSTR szPath, LoadSource loadSource);
 	void _LoadPack(LPCWSTR pszPath, LoadSource loadSource);
 	void _UnloadPack();
 	void _LoadReadme();

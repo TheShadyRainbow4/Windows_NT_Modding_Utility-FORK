@@ -974,3 +974,139 @@ cleanup:
 
 	return true;
 }
+bool CPack::CreateReversePack(LPCWSTR outPath)
+{
+	WCHAR szBackupFiles[MAX_PATH];
+	wcscpy_s(szBackupFiles, outPath);
+	PathCchAppend(szBackupFiles, MAX_PATH, L"BackupFiles");
+
+	if (SHCreateDirectoryExW(NULL, szBackupFiles, nullptr) != ERROR_SUCCESS)
+	{
+		DWORD err = GetLastError();
+		if (err != ERROR_FILE_EXISTS && err != ERROR_ALREADY_EXISTS)
+		{
+			Log(L"Failed to create backup directory '%s'", szBackupFiles);
+			return false;
+		}
+	}
+
+	WCHAR szPackIni[MAX_PATH];
+	wcscpy_s(szPackIni, outPath);
+	PathCchAppend(szPackIni, MAX_PATH, L"pack.ini");
+
+	FILE *fp = nullptr;
+	_wfopen_s(&fp, szPackIni, L"w, ccs=UTF-16LE");
+	if (!fp)
+	{
+		Log(L"Failed to create backup pack.ini '%s'", szPackIni);
+		return false;
+	}
+
+	fwprintf(fp, L"[Pack]\n");
+	fwprintf(fp, L"Name=%s (Backup)\n", _name.c_str());
+	fwprintf(fp, L"Author=%s\n", _author.c_str());
+	fwprintf(fp, L"Version=%s\n", _version.c_str());
+	fwprintf(fp, L"\n");
+
+	int backupFileIndex = 0;
+	int backupRegIndex = 0;
+
+	for (const auto &sec : _sections)
+	{
+		if (sec.type == PackSectionType::Files || sec.type == PackSectionType::Resources)
+		{
+			if (sec.items.empty()) continue;
+
+			fwprintf(fp, L"[Files]\n");
+			
+			if (sec.uMinBuild) fwprintf(fp, L"MinBuild=%u\n", sec.uMinBuild);
+			if (sec.uMaxBuild) fwprintf(fp, L"MaxBuild=%u\n", sec.uMaxBuild);
+
+			for (const auto &item : sec.items)
+			{
+				DWORD attr = GetFileAttributesW(item.destFile.c_str());
+				if (attr == INVALID_FILE_ATTRIBUTES || (attr & FILE_ATTRIBUTE_DIRECTORY))
+				{
+					continue;
+				}
+
+				WCHAR szFileName[MAX_PATH];
+				wcscpy_s(szFileName, PathFindFileNameW(item.destFile.c_str()));
+
+				WCHAR szBackupFileName[MAX_PATH];
+				swprintf_s(szBackupFileName, MAX_PATH, L"%d_%s", backupFileIndex++, szFileName);
+
+				WCHAR szBackupDest[MAX_PATH];
+				wcscpy_s(szBackupDest, szBackupFiles);
+				PathCchAppend(szBackupDest, MAX_PATH, szBackupFileName);
+
+				if (CopyFileW(item.destFile.c_str(), szBackupDest, FALSE))
+				{
+					fwprintf(fp, L"%s=BackupFiles\\%s\n", item.destFile.c_str(), szBackupFileName);
+				}
+			}
+			fwprintf(fp, L"\n");
+		}
+		else if (sec.type == PackSectionType::Registry)
+		{
+			if (sec.items.empty()) continue;
+
+			fwprintf(fp, L"[Registry]\n");
+			if (sec.flags & PackSectionFlags::TrustedInstaller) fwprintf(fp, L"TrustedInstaller=1\n");
+			if (sec.uMinBuild) fwprintf(fp, L"MinBuild=%u\n", sec.uMinBuild);
+			if (sec.uMaxBuild) fwprintf(fp, L"MaxBuild=%u\n", sec.uMaxBuild);
+
+			for (const auto &item : sec.items)
+			{
+				FILE *fReg = nullptr;
+				_wfopen_s(&fReg, item.sourceFile.c_str(), L"r, ccs=UTF-16LE");
+				if (!fReg) continue;
+
+				std::vector<std::wstring> keys;
+				WCHAR line[1024];
+				while (fgetws(line, 1024, fReg))
+				{
+					std::wstring sLine = line;
+					sLine.erase(sLine.find_last_not_of(L" \n\r\t") + 1);
+					sLine.erase(0, sLine.find_first_not_of(L" \n\r\t"));
+
+					if (sLine.length() > 2 && sLine[0] == L'[' && sLine.back() == L']')
+					{
+						std::wstring key = sLine.substr(1, sLine.length() - 2);
+						if (key.length() > 0 && key[0] == L'-') key = key.substr(1);
+						
+						if (std::find(keys.begin(), keys.end(), key) == keys.end())
+							keys.push_back(key);
+					}
+				}
+				fclose(fReg);
+
+				for (const auto &key : keys)
+				{
+					WCHAR szBackupRegName[MAX_PATH];
+					swprintf_s(szBackupRegName, MAX_PATH, L"reg_%d.reg", backupRegIndex++);
+
+					WCHAR szBackupDest[MAX_PATH];
+					wcscpy_s(szBackupDest, szBackupFiles);
+					PathCchAppend(szBackupDest, MAX_PATH, szBackupRegName);
+
+					std::wstring cmd = L"reg.exe export \"";
+					cmd += key;
+					cmd += L"\" \"";
+					cmd += szBackupDest;
+					cmd += L"\" /y";
+
+					DWORD exitCode;
+					if (SUCCEEDED(WaitForProcess(cmd.c_str(), &exitCode)) && exitCode == 0)
+					{
+						fwprintf(fp, L"BackupFiles\\%s=\n", szBackupRegName);
+					}
+				}
+			}
+			fwprintf(fp, L"\n");
+		}
+	}
+
+	fclose(fp);
+	return true;
+}
