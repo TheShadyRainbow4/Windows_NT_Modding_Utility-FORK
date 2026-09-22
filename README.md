@@ -1,10 +1,11 @@
 # Windows NT Modding Utility
-The Windows NT Modding Utility is a modding tool for windows, similar to the 7even Theme Source Patcher
-(7TSP), but including a different feature set.
+THIS IS A FORK (I Will still include all links to original Repo / Packs) The Windows NT Modding Utility is a modding tool for windows, similar to the 7even Theme Source Patcher (7TSP), but including a different feature set.
 
 ![Preview](preview.png)
+![Preview](UAC-Prompt.png)
 
 ## Features
+
 - Replacing/adding resources in executable files
 - Copying/replacing files
 - Importing registry entries
@@ -12,7 +13,11 @@ The Windows NT Modding Utility is a modding tool for windows, similar to the 7ev
 - Author-defined pack options that the user can change before applying the pack
 
 ## Get packs
+
 You can get packs at the [dedicated site](https://get-ntmu.github.io/#!/packs).
+[dedicated site](https://get-ntmu.github.io/#!/packs).
+https://github.com/TheShadyRainbow4/WinNTMU_Packs-EliteSoftware
 
 ## Create packs
+
 You can learn the pack format specification at [the wiki](https://github.com/get-ntmu/NTMU/wiki).
