@@ -21,8 +21,21 @@ LRESULT CMainWindow::v_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 			_OnCreate();
 			return 0;
 		case WM_DESTROY:
+		{
+			RECT rc;
+			GetWindowRect(hWnd, &rc);
+			HKEY hKey;
+			if (RegCreateKeyExW(HKEY_CURRENT_USER, L"EliteSoftware\\WinNTMU", 0, NULL, 0, KEY_WRITE, NULL, &hKey, NULL) == ERROR_SUCCESS)
+			{
+				DWORD dwWidth = RECTWIDTH(rc);
+				DWORD dwHeight = RECTHEIGHT(rc);
+				RegSetValueExW(hKey, L"WindowWidth", 0, REG_DWORD, (const BYTE*)&dwWidth, sizeof(DWORD));
+				RegSetValueExW(hKey, L"WindowHeight", 0, REG_DWORD, (const BYTE*)&dwHeight, sizeof(DWORD));
+				RegCloseKey(hKey);
+			}
 			PostQuitMessage(0);
 			return 0;
+		}
 		case WM_COMMAND:
 			switch (LOWORD(wParam))
 			{
@@ -377,10 +390,10 @@ void CMainWindow::_OnCreate()
 	DragAcceptFiles(_hwnd, TRUE);
 	
 	/* We need to do this in order to drag from unelevated processes. */
-	ChangeWindowMessageFilterEx(_hwnd, WM_DROPFILES, MSGFLT_ALLOW, nullptr);
-	ChangeWindowMessageFilterEx(_hwnd, WM_COPYDATA, MSGFLT_ALLOW, nullptr);
+	ChangeWindowMessageFilter(WM_DROPFILES, MSGFLT_ADD);
+	ChangeWindowMessageFilter(WM_COPYDATA, MSGFLT_ADD);
 	// 0x0049 = WM_COPYGLOBALDATA
-	ChangeWindowMessageFilterEx(_hwnd, 0x0049, MSGFLT_ALLOW, nullptr);
+	ChangeWindowMessageFilter(0x0049, MSGFLT_ADD);
 
 	static LPCWSTR s_rgMetaNames[MI_COUNT] = {
 		_pTranslations->pack_name,
@@ -417,6 +430,21 @@ void CMainWindow::_OnCreate()
 		_hwnd, (HMENU)IDC_APPLY, NULL, NULL
 	);
 	EnableWindow(_hwndApply, FALSE);
+
+	_hwndStatusBar = CreateWindowExW(
+		0, STATUSCLASSNAMEW, NULL,
+		WS_CHILD | WS_VISIBLE | SBARS_SIZEGRIP,
+		0, 0, 0, 0,
+		_hwnd, (HMENU)2000, g_hinst, NULL
+	);
+	
+	int parts[] = { 100, -1 };
+	SendMessageW(_hwndStatusBar, SB_SETPARTS, 2, (LPARAM)parts);
+	
+	WCHAR szVer[64];
+	swprintf_s(szVer, L"Version %d.%d.%d.0", VER_MAJOR, VER_MINOR, VER_REVISION);
+	SendMessageW(_hwndStatusBar, SB_SETTEXTW, 0, (LPARAM)L"Ready");
+	SendMessageW(_hwndStatusBar, SB_SETTEXTW, 1, (LPARAM)szVer);
 
 	_hwndText = CreateWindowExW(
 		WS_EX_CLIENTEDGE, WC_EDITW, nullptr,
@@ -627,6 +655,17 @@ void CMainWindow::_UpdateLayout()
 {
 	RECT rcClient;
 	GetClientRect(_hwnd, &rcClient);
+
+	if (_hwndStatusBar)
+	{
+		SendMessageW(_hwndStatusBar, WM_SIZE, 0, 0);
+		RECT rcStatus;
+		GetWindowRect(_hwndStatusBar, &rcStatus);
+		rcClient.bottom -= RECTHEIGHT(rcStatus);
+
+		int parts[] = { RECTWIDTH(rcClient) - 150, -1 };
+		SendMessageW(_hwndStatusBar, SB_SETPARTS, 2, (LPARAM)parts);
+	}
 
 	const int marginX = _XDUToXPix(6);
 	const int marginY = _YDUToYPix(4);
@@ -939,6 +978,9 @@ void CMainWindow::s_LogCallback(void *lpParam, LPCWSTR pszText)
 	newText += pszText;
 	newText += L"\r\n";
 	SetWindowTextW(hwnd, newText.c_str());
+
+	if (pThis->_hwndStatusBar)
+		SendMessageW(pThis->_hwndStatusBar, SB_SETTEXTW, 0, (LPARAM)pszText);
 }
 
 void CMainWindow::_ApplyPackWorker()
@@ -1024,6 +1066,21 @@ CMainWindow *CMainWindow::CreateAndShow(int nCmdShow)
 
 	RECT rc;
 	ScreenCenteredRect(575, 500, c_dwMainWindowStyle, c_dwMainWindowExStyle, true, &rc);
+
+	HKEY hKey;
+	if (RegOpenKeyExW(HKEY_CURRENT_USER, L"EliteSoftware\\WinNTMU", 0, KEY_READ, &hKey) == ERROR_SUCCESS)
+	{
+		DWORD dwType, cbData, dwWidth = 0, dwHeight = 0;
+		cbData = sizeof(DWORD);
+		RegQueryValueExW(hKey, L"WindowWidth", NULL, &dwType, (LPBYTE)&dwWidth, &cbData);
+		cbData = sizeof(DWORD);
+		RegQueryValueExW(hKey, L"WindowHeight", NULL, &dwType, (LPBYTE)&dwHeight, &cbData);
+		if (dwWidth > 0 && dwHeight > 0)
+		{
+			ScreenCenteredRect(dwWidth, dwHeight, c_dwMainWindowStyle, c_dwMainWindowExStyle, false, &rc);
+		}
+		RegCloseKey(hKey);
+	}
 
 	CMainWindow *pWindow = Create(
 		c_dwMainWindowExStyle,

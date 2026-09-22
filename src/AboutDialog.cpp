@@ -239,11 +239,14 @@ void CAboutDialog::_UpdateLayout()
 
 	currentY += _YDUToYPix(c_duLabelHeight * 3) + _YDUToYPix(c_duMargin);
 
-	const int linkWidth = _XDUToXPix(80);
+	SIZE linkSize = { 0 };
+	SendMessageW(_hwndGitHubLink, LM_GETIDEALSIZE, 0, (LPARAM)&linkSize);
+	const int linkWidth = linkSize.cx > 0 ? linkSize.cx : _XDUToXPix(80);
+
 	hdwp = DeferWindowPos(
 		hdwp, _hwndGitHubLink, NULL,
 		(totalW - linkWidth) / 2, currentY,
-		linkWidth, labelHeight,
+		linkWidth, linkSize.cy > 0 ? linkSize.cy : labelHeight,
 		SWP_NOZORDER
 	);
 

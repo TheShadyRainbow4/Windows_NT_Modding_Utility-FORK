@@ -31,7 +31,7 @@ MM_DEC const mm_about_dialog_translations_t *mm_get_about_dialog_translations(vo
 
 static wchar_t *mm_about_dialog_translations_app_version_en_US(unsigned int major, unsigned int minor, unsigned int revision)
 {
-    MM_FORMATTED_STRING_BODY_W(L"Version %u.%u.%u", major, minor, revision)
+    MM_FORMATTED_STRING_BODY_W(L"Version %u.%u.%u.0", major, minor, revision)
 }
 
 static const mm_about_dialog_translations_t mm_about_dialog_translations_en_US = {
@@ -46,7 +46,7 @@ static const mm_about_dialog_translations_t mm_about_dialog_translations_en_US =
 
 static wchar_t *mm_about_dialog_translations_app_version_ja_JP(unsigned int major, unsigned int minor, unsigned int revision)
 {
-    MM_FORMATTED_STRING_BODY_W(L"バーション %u.%u.%u", major, minor, revision)
+    MM_FORMATTED_STRING_BODY_W(L"バーション %u.%u.%u.0", major, minor, revision)
 }
 
 static const mm_about_dialog_translations_t mm_about_dialog_translations_ja_JP = {
