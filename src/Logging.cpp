@@ -31,12 +31,16 @@ void Log(LPCWSTR pszFormat, ...)
 	if (lastSlash) {
 		*lastSlash = L'\0';
 		wcscat_s(szExePath, MAX_PATH, L"\\WinNTMU.log");
-		FILE* fLog = _wfsopen(szExePath, L"a, ccs=UTF-8", _SH_DENYNO);
+		FILE* fLog = _wfsopen(szExePath, L"a", _SH_DENYNO);
 		if (fLog) {
-			fwprintf(fLog, L"%s\n", szBuffer);
+			SYSTEMTIME st;
+			GetLocalTime(&st);
+			fwprintf(fLog, L"[%04d-%02d-%02d %02d:%02d:%02d] %s\n", st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond, szBuffer);
 			fclose(fLog);
 		}
 	}
+
+	va_end(args);
 
 }
 

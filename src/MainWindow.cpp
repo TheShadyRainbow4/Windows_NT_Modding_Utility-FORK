@@ -243,17 +243,13 @@ LRESULT CMainWindow::v_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 			UINT uCode = ((LPNMHDR)lParam)->code;
 			HWND hwndFrom = ((LPNMHDR)lParam)->hwndFrom;
 
-			if (hwndFrom == _hwndStatusBar && uCode == NM_CLICK)
+			if ((hwndFrom == _hwndLogLink && (uCode == NM_CLICK || uCode == NM_RETURN)))
 			{
-				LPNMMOUSE pnm = (LPNMMOUSE)lParam;
-				if (pnm->dwItemSpec == 2)
-				{
-					WCHAR szExePath[MAX_PATH];
-					GetModuleFileNameW(NULL, szExePath, MAX_PATH);
-					PathCchRemoveFileSpec(szExePath, MAX_PATH);
-					PathCchAppend(szExePath, MAX_PATH, L"WinNTMU.log");
-					ShellExecuteW(NULL, L"open", szExePath, NULL, NULL, SW_SHOWNORMAL);
-				}
+				WCHAR szExePath[MAX_PATH];
+				GetModuleFileNameW(NULL, szExePath, MAX_PATH);
+				PathCchRemoveFileSpec(szExePath, MAX_PATH);
+				PathCchAppend(szExePath, MAX_PATH, L"WinNTMU.log");
+				ShellExecuteW(NULL, L"open", szExePath, NULL, NULL, SW_SHOWNORMAL);
 				return 0;
 			}
 			switch (uCode)
@@ -499,8 +495,18 @@ void CMainWindow::_OnCreate()
 	WCHAR szVer[64];
 	swprintf_s(szVer, L"Version %d.%d.%d.0", VER_MAJOR, VER_MINOR, VER_REVISION);
 	SendMessageW(_hwndStatusBar, SB_SETTEXTW, 0, (LPARAM)L"Ready");
-	SendMessageW(_hwndStatusBar, SB_SETTEXTW, 1, (LPARAM)szVer);
-	SendMessageW(_hwndStatusBar, SB_SETTEXTW, 2, (LPARAM)L"View WinNTMU Logs");
+	SendMessageW(_hwndStatusBar, SB_SETTEXTW, 1, (LPARAM)L""); // Empty for the syslink
+	SendMessageW(_hwndStatusBar, SB_SETTEXTW, 2, (LPARAM)szVer);
+
+	_hwndLogLink = CreateWindowExW(
+		0, WC_LINK, L"<a>View WinNTMU Logs</a>",
+		WS_CHILD | WS_VISIBLE | WS_TABSTOP | LWS_TRANSPARENT,
+		0, 0, 0, 0,
+		_hwndStatusBar, (HMENU)2001, g_hinst, NULL
+	);
+	HFONT hFont = (HFONT)SendMessageW(_hwnd, WM_GETFONT, 0, 0);
+	if (!hFont) hFont = (HFONT)GetStockObject(DEFAULT_GUI_FONT);
+	SendMessageW(_hwndLogLink, WM_SETFONT, (WPARAM)hFont, 0);
 
 	_hwndText = CreateWindowExW(
 		WS_EX_CLIENTEDGE, WC_EDITW, nullptr,
@@ -719,8 +725,21 @@ void CMainWindow::_UpdateLayout()
 		GetWindowRect(_hwndStatusBar, &rcStatus);
 		rcClient.bottom -= RECTHEIGHT(rcStatus);
 
-		int parts[] = { RECTWIDTH(rcClient) - 250, RECTWIDTH(rcClient) - 150, -1 };
+		int parts[] = { RECTWIDTH(rcClient) - _XDUToXPix(100), RECTWIDTH(rcClient) - _XDUToXPix(45), -1 };
 		SendMessageW(_hwndStatusBar, SB_SETPARTS, 3, (LPARAM)parts);
+
+		if (_hwndLogLink)
+		{
+			RECT rcPart;
+			SendMessageW(_hwndStatusBar, SB_GETRECT, 1, (LPARAM)&rcPart);
+			
+			SIZE idealSize;
+			SendMessageW(_hwndLogLink, LM_GETIDEALSIZE, 0, (LPARAM)&idealSize);
+			
+			int x = rcPart.left + ((rcPart.right - rcPart.left) - idealSize.cx) / 2;
+			int y = rcPart.top + ((rcPart.bottom - rcPart.top) - idealSize.cy) / 2;
+			SetWindowPos(_hwndLogLink, NULL, x, y, idealSize.cx, idealSize.cy, SWP_NOZORDER);
+		}
 	}
 
 	const int marginX = _XDUToXPix(6);

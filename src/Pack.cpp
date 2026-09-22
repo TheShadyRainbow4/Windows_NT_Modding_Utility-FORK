@@ -1044,7 +1044,12 @@ bool CPack::CreateReversePack(LPCWSTR outPath)
 
 				if (CopyFileW(item.destFile.c_str(), szBackupDest, FALSE))
 				{
+					Log(L"Backed up '%s' to '%s'", item.destFile.c_str(), szBackupDest);
 					fwprintf(fp, L"%s=BackupFiles\\%s\n", item.destFile.c_str(), pszRelPath);
+				}
+				else
+				{
+					Log(L"Failed to backup '%s' (Error: %d)", item.destFile.c_str(), GetLastError());
 				}
 			}
 			fwprintf(fp, L"\n");

@@ -46,6 +46,7 @@ private:
 	HWND _hwndProgress;
 	HWND _hwndApply;
 	HWND _hwndStatusBar;
+	HWND _hwndLogLink;
 
 	HWND _hwndText;
 	HWND _hwndPreview;
