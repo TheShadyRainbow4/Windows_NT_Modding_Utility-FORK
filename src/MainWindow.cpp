@@ -489,7 +489,7 @@ void CMainWindow::_OnCreate()
 		_hwnd, (HMENU)2000, g_hinst, NULL
 	);
 	
-	int parts[] = { 100, 200, -1 };
+	int parts[] = { 200, 300, -1 };
 	SendMessageW(_hwndStatusBar, SB_SETPARTS, 3, (LPARAM)parts);
 	
 	WCHAR szVer[64];
@@ -725,7 +725,7 @@ void CMainWindow::_UpdateLayout()
 		GetWindowRect(_hwndStatusBar, &rcStatus);
 		rcClient.bottom -= RECTHEIGHT(rcStatus);
 
-		int parts[] = { RECTWIDTH(rcClient) - _XDUToXPix(100), RECTWIDTH(rcClient) - _XDUToXPix(45), -1 };
+		int parts[] = { RECTWIDTH(rcClient) - _XDUToXPix(125), RECTWIDTH(rcClient) - _XDUToXPix(50), -1 };
 		SendMessageW(_hwndStatusBar, SB_SETPARTS, 3, (LPARAM)parts);
 
 		if (_hwndLogLink)
@@ -1115,7 +1115,22 @@ void CMainWindow::_ApplyPackWorker()
 	_fApplying = true;
 
 	WCHAR szDefaultBackupPath[MAX_PATH];
-	swprintf_s(szDefaultBackupPath, MAX_PATH, L"C:\\WinNTMU_Backups\\%s", _pack.GetName().c_str());
+	WCHAR szExePath[MAX_PATH];
+	GetModuleFileNameW(NULL, szExePath, MAX_PATH);
+	PathRemoveFileSpecW(szExePath);
+
+	WCHAR szPortableCheck[MAX_PATH];
+	swprintf_s(szPortableCheck, MAX_PATH, L"%s\\portable.txt", szExePath);
+
+	if (GetFileAttributesW(szPortableCheck) != INVALID_FILE_ATTRIBUTES)
+	{
+		swprintf_s(szDefaultBackupPath, MAX_PATH, L"%s\\WinNTMU_Backups\\%s", szExePath, _pack.GetName().c_str());
+	}
+	else
+	{
+		swprintf_s(szDefaultBackupPath, MAX_PATH, L"C:\\WinNTMU_Backups\\%s", _pack.GetName().c_str());
+	}
+
 	if (GetFileAttributesW(szDefaultBackupPath) == INVALID_FILE_ATTRIBUTES)
 	{
 		SHCreateDirectoryExW(NULL, szDefaultBackupPath, nullptr);
