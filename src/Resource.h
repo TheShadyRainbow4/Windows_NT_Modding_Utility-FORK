@@ -5,7 +5,7 @@
 
 #define VER_MAJOR                2
 #define VER_MINOR                0
-#define VER_REVISION             5
+#define VER_REVISION             7
 
 #define VER_STRING \
     STRINGIZE(VER_MAJOR) "." STRINGIZE(VER_MINOR) "." STRINGIZE(VER_REVISION)
@@ -14,3 +14,4 @@
 #define IDI_ABOUT              101
 #define IDR_COMPLETE_WAV       102
 #define IDR_WAV_COMPLETE       200
+

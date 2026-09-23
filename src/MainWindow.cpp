@@ -50,8 +50,20 @@ LRESULT CMainWindow::v_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 			switch (LOWORD(wParam))
 			{
 				case IDC_APPLY:
-					_ApplyPack();
-					break;
+				{
+					WCHAR szText[64];
+					GetWindowTextW(_hwndApply, szText, 64);
+					if (wcscmp(szText, L"Reload Pack") == 0)
+					{
+						_LoadReadme();
+						SetWindowTextW(_hwndApply, _pTranslations->apply_button);
+					}
+					else
+					{
+						_ApplyPack();
+					}
+				}
+				break;
 				case IDM_FILEOPEN:
 				{
 					LPCWSTR pszFilter = _pTranslations->pack_file_filter;
@@ -604,9 +616,26 @@ void CMainWindow::_UpdateMetrics()
 	}
 
 	LOGFONTW lf = { 0 };
-	wcscpy_s(lf.lfFaceName, L"Courier New");
+	wcscpy_s(lf.lfFaceName, L"Segoe UI");
 	lf.lfHeight = -MulDiv(10, _dpi, 72);
 	_hfMonospace = CreateFontIndirectW(&lf);
+
+	{
+		HDC hdc = GetDC(NULL);
+		HFONT hOldFont = (HFONT)SelectObject(hdc, _hfMonospace);
+		WCHAR szFace[LF_FACESIZE];
+		GetTextFaceW(hdc, LF_FACESIZE, szFace);
+		SelectObject(hdc, hOldFont);
+		ReleaseDC(NULL, hdc);
+
+		if (_wcsicmp(szFace, L"Segoe UI") != 0)
+		{
+			DeleteObject(_hfMonospace);
+			wcscpy_s(lf.lfFaceName, L"Courier New");
+			_hfMonospace = CreateFontIndirectW(&lf);
+		}
+	}
+
 	SendMessageW(_hwndText, WM_SETFONT, (WPARAM)_hfMonospace, NULL);
 
 	// Update options style (hot tracking looks bad on classic)
@@ -1141,7 +1170,7 @@ void CMainWindow::_ApplyPackWorker()
 	{
 		PlaySoundW(MAKEINTRESOURCEW(IDR_WAV_COMPLETE), GetModuleHandleW(NULL), SND_RESOURCE | SND_ASYNC);
 		MainWndMsgBox(_pTranslations->pack_apply_successful, MB_ICONINFORMATION);
-		_LoadReadme();
+		SetWindowTextW(_hwndApply, L"Reload Pack");
 	}
 	else
 	{

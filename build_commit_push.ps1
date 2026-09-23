@@ -5,6 +5,19 @@ if (-not (Test-Path $msbuildPath)) {
     Write-Error "MSBuild.exe not found at $msbuildPath"
 }
 
+Write-Host "Bumping version number..."
+$resPath = "src\Resource.h"
+$resContent = Get-Content $resPath -Raw
+$verMajor = [regex]::Match($resContent, "#define VER_MAJOR\s+(\d+)").Groups[1].Value
+$verMinor = [regex]::Match($resContent, "#define VER_MINOR\s+(\d+)").Groups[1].Value
+$verRevision = [regex]::Match($resContent, "#define VER_REVISION\s+(\d+)").Groups[1].Value
+$newRevision = [int]$verRevision + 1
+
+$resContent = $resContent -replace '(#define VER_REVISION\s+)\d+', ('${1}' + $newRevision)
+Set-Content -Path $resPath -Value $resContent -NoNewline
+$version = "$verMajor.$verMinor.$newRevision.0"
+Write-Host "Bumped version to $version"
+
 Write-Host "Building NTMU.sln (Release|x64)..."
 & $msbuildPath "NTMU.sln" /p:Configuration=Release /p:Platform=x64
 if ($LASTEXITCODE -ne 0) {
