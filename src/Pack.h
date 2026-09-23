@@ -41,6 +41,9 @@ private:
 	std::wstring _readmePath;
 	std::vector<PackOption> _options;
 
+	bool _bIgnoreMissingLoad;
+	bool _bIgnoreMissingApply;
+
 	enum class PackSectionType
 	{
 		Resources = 0,

@@ -1151,13 +1151,22 @@ void CMainWindow::_ApplyPackWorker()
 	WCHAR szPortableCheck[MAX_PATH];
 	swprintf_s(szPortableCheck, MAX_PATH, L"%s\\portable.txt", szExePath);
 
+	WCHAR szBaseBackupPath[MAX_PATH];
 	if (GetFileAttributesW(szPortableCheck) != INVALID_FILE_ATTRIBUTES)
 	{
-		swprintf_s(szDefaultBackupPath, MAX_PATH, L"%s\\WinNTMU_Backups\\%s", szExePath, _pack.GetName().c_str());
+		swprintf_s(szBaseBackupPath, MAX_PATH, L"%s\\WinNTMU_Backups\\%s", szExePath, _pack.GetName().c_str());
 	}
 	else
 	{
-		swprintf_s(szDefaultBackupPath, MAX_PATH, L"C:\\WinNTMU_Backups\\%s", _pack.GetName().c_str());
+		swprintf_s(szBaseBackupPath, MAX_PATH, L"C:\\WinNTMU_Backups\\%s", _pack.GetName().c_str());
+	}
+
+	wcscpy_s(szDefaultBackupPath, MAX_PATH, szBaseBackupPath);
+	int counter = 0;
+	while (GetFileAttributesW(szDefaultBackupPath) != INVALID_FILE_ATTRIBUTES)
+	{
+		counter++;
+		swprintf_s(szDefaultBackupPath, MAX_PATH, L"%s (%d)", szBaseBackupPath, counter);
 	}
 
 	if (GetFileAttributesW(szDefaultBackupPath) == INVALID_FILE_ATTRIBUTES)

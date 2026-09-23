@@ -75,9 +75,16 @@ bool CPack::_ConstructPackFilePath(LPCWSTR pszPath, std::wstring &out)
 	DWORD dwFileAttrs = GetFileAttributesW(szResult);
 	if (dwFileAttrs == INVALID_FILE_ATTRIBUTES)
 	{
-		msgmap::wstring spszError = s_pTranslations->nonexistent_file(szResult);
-		MainWndMsgBox(spszError, MB_ICONERROR);
-		return false;
+		if (!_bIgnoreMissingLoad)
+		{
+			std::wstring errorMsg = ((LPCWSTR)s_pTranslations->nonexistent_file(szResult));
+			errorMsg += L"\n\nDo you want to load anyway? (Missing files can be skipped during application)";
+			if (MainWndMsgBox(errorMsg.c_str(), MB_ICONWARNING | MB_YESNO) != IDYES)
+				return false;
+			_bIgnoreMissingLoad = true;
+		}
+		out = szResult;
+		return true;
 	}
 
 	if (dwFileAttrs & FILE_ATTRIBUTE_DIRECTORY)
@@ -680,6 +687,19 @@ HRESULT CPack::_LoadCommandLineSettings()
 
 bool CPack::Apply(void *lpParam, PackApplyProgressCallback pfnCallback)
 {
+#define CHECK_MISSING_APPLY(item) \
+	if (GetFileAttributesW((item).sourceFile.c_str()) == INVALID_FILE_ATTRIBUTES) { \
+		if (!_bIgnoreMissingApply) { \
+			std::wstring errorMsg = ((LPCWSTR)s_pTranslations->nonexistent_file((item).sourceFile.c_str())); \
+			errorMsg += L"\n\nDo you want to skip this missing file? (Selecting Yes will skip all subsequent missing files)"; \
+			if (MainWndMsgBox(errorMsg.c_str(), MB_ICONWARNING | MB_YESNO) != IDYES) return false; \
+			_bIgnoreMissingApply = true; \
+		} \
+		processedItems++; \
+		pfnCallback(lpParam, processedItems, totalItems); \
+		continue; \
+	}
+
 	std::vector<PackSection> secs;
 	for (const auto &sec : _sections)
 	{
@@ -711,6 +731,7 @@ bool CPack::Apply(void *lpParam, PackApplyProgressCallback pfnCallback)
 
 				for (const auto &item : sec.items)
 				{
+					CHECK_MISSING_APPLY(item);
 					Log(L"Applying registry file '%s'...", item.sourceFile.c_str());
 
 					std::wstring command = L"\"";
@@ -774,6 +795,7 @@ bool CPack::Apply(void *lpParam, PackApplyProgressCallback pfnCallback)
 			{
 				for (const auto &item : sec.items)
 				{
+					CHECK_MISSING_APPLY(item);
 					if (!_CopyFileWithOldStack(item.sourceFile.c_str(), item.destFile.c_str()))
 						return false;
 
@@ -786,6 +808,7 @@ bool CPack::Apply(void *lpParam, PackApplyProgressCallback pfnCallback)
 			{
 				for (const auto &item : sec.items)
 				{
+					CHECK_MISSING_APPLY(item);
 					WCHAR szTempFile[MAX_PATH];
 					wcscpy_s(szTempFile, g_szTempDir);
 					PathCchAppend(szTempFile, MAX_PATH, PathFindFileNameW(item.destFile.c_str()));

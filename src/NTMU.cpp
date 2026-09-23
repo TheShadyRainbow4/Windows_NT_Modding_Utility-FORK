@@ -80,7 +80,9 @@ int WINAPI wWinMain(
 		return -1;
 	}
 
-	ExpandEnvironmentStringsW(L"%TEMP%\\NTMU\\", g_szTempDir, MAX_PATH);
+	GetModuleFileNameW(NULL, g_szTempDir, MAX_PATH);
+	PathRemoveFileSpecW(g_szTempDir);
+	PathCchAppend(g_szTempDir, MAX_PATH, L"WinNTMU_TEMP");
 	DWORD dwAttr = GetFileAttributesW(g_szTempDir);
 	if (dwAttr == INVALID_FILE_ATTRIBUTES && !CreateDirectoryW(g_szTempDir, nullptr))
 	{
@@ -219,5 +221,24 @@ int WINAPI wWinMain(
 		}
 	}
 	
+	if (GetFileAttributesW(g_szTempDir) != INVALID_FILE_ATTRIBUTES)
+	{
+		WCHAR szTempDel[MAX_PATH + 1];
+		wcscpy_s(szTempDel, g_szTempDir);
+		szTempDel[wcslen(g_szTempDir) + 1] = L'\0';
+
+		SHFILEOPSTRUCTW file_op = {
+			NULL,
+			FO_DELETE,
+			szTempDel,
+			L"\\0",
+			FOF_NOCONFIRMATION | FOF_NOERRORUI | FOF_SILENT,
+			false,
+			0,
+			L"\\0"
+		};
+		SHFileOperationW(&file_op);
+	}
+
 	return 0;
 }
