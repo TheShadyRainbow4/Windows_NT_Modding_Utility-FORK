@@ -505,7 +505,7 @@ void CMainWindow::_OnCreate()
 	SendMessageW(_hwndStatusBar, SB_SETPARTS, 3, (LPARAM)parts);
 	
 	WCHAR szVer[64];
-	swprintf_s(szVer, L"Version %d.%d.%d.0", VER_MAJOR, VER_MINOR, VER_REVISION);
+	swprintf_s(szVer, L"Version %d.%d.%d.%d", VER_MAJOR, VER_MINOR, VER_BUILD, VER_REVISION);
 	SendMessageW(_hwndStatusBar, SB_SETTEXTW, 0, (LPARAM)L"Ready");
 	SendMessageW(_hwndStatusBar, SB_SETTEXTW, 1, (LPARAM)L""); // Empty for the syslink
 	SendMessageW(_hwndStatusBar, SB_SETTEXTW, 2, (LPARAM)szVer);
@@ -754,7 +754,7 @@ void CMainWindow::_UpdateLayout()
 		GetWindowRect(_hwndStatusBar, &rcStatus);
 		rcClient.bottom -= RECTHEIGHT(rcStatus);
 
-		int parts[] = { RECTWIDTH(rcClient) - _XDUToXPix(125), RECTWIDTH(rcClient) - _XDUToXPix(50), -1 };
+		int parts[] = { RECTWIDTH(rcClient) - _XDUToXPix(160), RECTWIDTH(rcClient) - _XDUToXPix(85), -1 };
 		SendMessageW(_hwndStatusBar, SB_SETPARTS, 3, (LPARAM)parts);
 
 		if (_hwndLogLink)

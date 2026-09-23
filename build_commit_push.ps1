@@ -10,12 +10,19 @@ $resPath = "src\Resource.h"
 $resContent = Get-Content $resPath -Raw
 $verMajor = [regex]::Match($resContent, "#define VER_MAJOR\s+(\d+)").Groups[1].Value
 $verMinor = [regex]::Match($resContent, "#define VER_MINOR\s+(\d+)").Groups[1].Value
+$verBuild = [regex]::Match($resContent, "#define VER_BUILD\s+(\d+)").Groups[1].Value
 $verRevision = [regex]::Match($resContent, "#define VER_REVISION\s+(\d+)").Groups[1].Value
+
+$newMinor = [int]$verMinor + 1
+$newBuild = [int]$verBuild + 1
 $newRevision = [int]$verRevision + 1
 
+$resContent = $resContent -replace '(#define VER_MINOR\s+)\d+', ('${1}' + $newMinor)
+$resContent = $resContent -replace '(#define VER_BUILD\s+)\d+', ('${1}' + $newBuild)
 $resContent = $resContent -replace '(#define VER_REVISION\s+)\d+', ('${1}' + $newRevision)
+
 Set-Content -Path $resPath -Value $resContent -NoNewline
-$version = "$verMajor.$verMinor.$newRevision.0"
+$version = "$verMajor.$newMinor.$newBuild.$newRevision"
 Write-Host "Bumped version to $version"
 
 Write-Host "Building NTMU.sln (Release|x64)..."
