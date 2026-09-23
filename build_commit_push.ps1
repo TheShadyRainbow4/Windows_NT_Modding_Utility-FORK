@@ -55,8 +55,9 @@ git push origin HEAD
 
 $verMajor = (Select-String -Path "src\Resource.h" -Pattern "#define VER_MAJOR\s+(\d+)").Matches.Groups[1].Value
 $verMinor = (Select-String -Path "src\Resource.h" -Pattern "#define VER_MINOR\s+(\d+)").Matches.Groups[1].Value
+$verBuild = (Select-String -Path "src\Resource.h" -Pattern "#define VER_BUILD\s+(\d+)").Matches.Groups[1].Value
 $verRevision = (Select-String -Path "src\Resource.h" -Pattern "#define VER_REVISION\s+(\d+)").Matches.Groups[1].Value
-$version = "$verMajor.$verMinor.$verRevision.0"
+$version = "$verMajor.$verMinor.$verBuild.$verRevision"
 
 $commitMsg = git log -1 --pretty=%B
 
