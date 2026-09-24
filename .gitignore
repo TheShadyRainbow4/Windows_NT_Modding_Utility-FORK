@@ -7,3 +7,4 @@ WinNTMU_Backups/
 x64/Release/portable.txt
 
 *.py
+x64/Release/WinNTMU.log
