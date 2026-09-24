@@ -172,10 +172,8 @@ LRESULT CMainWindow::v_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 						WCHAR szPath[MAX_PATH];
 						if (SHGetPathFromIDListW(pidl, szPath))
 						{
-							if (_pack.CreateReversePack(szPath))
-								MainWndMsgBox(L"Reverse pack created successfully.", MB_ICONINFORMATION);
-							else
-								MainWndMsgBox(L"Failed to create reverse pack.", MB_ICONERROR);
+							_szReversePackPath = szPath;
+							CreateThread(nullptr, 0, s_CreateReversePackThreadProc, this, NULL, nullptr);
 						}
 						CoTaskMemFree(pidl);
 					}
@@ -1101,6 +1099,51 @@ DWORD CALLBACK CMainWindow::s_ApplyPackThreadProc(LPVOID lpParam)
 	((CMainWindow *)lpParam)->_ApplyPackWorker();
 	ExitThread(0);
 	return 0;
+}
+
+// static
+DWORD CALLBACK CMainWindow::s_CreateReversePackThreadProc(LPVOID lpParam)
+{
+	((CMainWindow *)lpParam)->_CreateReversePackWorker();
+	ExitThread(0);
+	return 0;
+}
+
+void CMainWindow::_CreateReversePackWorker()
+{
+	HMENU hmenu = GetMenu(_hwnd);
+	HMENU hmenuSystem = GetSystemMenu(_hwnd, FALSE);
+
+	_ToggleTextPlaceholder(false);
+	SetWindowTextW(_hwndText, L"");
+
+	EnableMenuItem(hmenu, IDM_FILEEXIT, MF_BYCOMMAND | MF_GRAYED | MF_DISABLED);
+	EnableMenuItem(hmenuSystem, SC_CLOSE, MF_BYCOMMAND | MF_GRAYED | MF_DISABLED);
+	EnableWindow(_hwndApply, FALSE);
+	EnableWindow(_hwndOptions, FALSE);
+
+	DWORD dwCallbackID;
+	AddLogCallback(s_LogCallback, this, &dwCallbackID);
+
+	_fApplying = true;
+
+	if (_pack.CreateReversePack(_szReversePackPath.c_str()))
+	{
+		PlaySoundW(MAKEINTRESOURCEW(IDR_WAV_COMPLETE), GetModuleHandleW(NULL), SND_RESOURCE | SND_ASYNC);
+		MainWndMsgBox(L"Reverse pack created successfully.", MB_ICONINFORMATION);
+		SetWindowTextW(_hwndApply, L"Reload Pack");
+	}
+	else
+		MainWndMsgBox(L"Failed to create reverse pack.", MB_ICONERROR);
+
+	_fApplying = false;
+
+	RemoveLogCallback(dwCallbackID);
+
+	EnableMenuItem(hmenu, IDM_FILEEXIT, MF_BYCOMMAND | MF_ENABLED);
+	EnableMenuItem(hmenuSystem, SC_CLOSE, MF_BYCOMMAND | MF_ENABLED);
+	EnableWindow(_hwndApply, TRUE);
+	EnableWindow(_hwndOptions, TRUE);
 }
 
 // static
