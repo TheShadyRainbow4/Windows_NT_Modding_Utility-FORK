@@ -86,7 +86,7 @@ HRESULT WaitForProcess(LPCWSTR pszCommandLine, DWORD *lpdwExitCode)
 		nullptr,
 		nullptr,
 		FALSE,
-		NULL,
+		CREATE_NO_WINDOW,
 		nullptr,
 		nullptr,
 		&si,

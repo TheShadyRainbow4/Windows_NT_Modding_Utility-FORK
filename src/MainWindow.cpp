@@ -108,7 +108,7 @@ LRESULT CMainWindow::v_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 					ShellExecuteW(
 						NULL, L"open",
 						szExePath, L"-show",
-						nullptr, SW_SHOWNORMAL
+						nullptr, SW_HIDE
 					);
 
 					wil::com_ptr<IEmptyVolumeCache> spEmptyVolCache;

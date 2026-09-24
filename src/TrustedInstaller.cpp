@@ -271,7 +271,7 @@ HRESULT CreateProcessAsTrustedInstaller(LPCWSTR pszCommandLine, LPPROCESS_INFORM
 		LOGON_WITH_PROFILE,
 		nullptr,
 		(LPWSTR)pszCommandLine,
-		CREATE_UNICODE_ENVIRONMENT,
+		CREATE_UNICODE_ENVIRONMENT | CREATE_NO_WINDOW,
 		nullptr,
 		nullptr,
 		&si,
