@@ -741,7 +741,7 @@ bool CPack::Apply(void *lpParam, PackApplyProgressCallback pfnCallback)
 					command += L"\"";
 
 					DWORD dwExitCode;
-					HRESULT hr = pfnWaitFunc(command.c_str(), &dwExitCode);
+					HRESULT hr = pfnWaitFunc(command.c_str(), &dwExitCode, 0);
 					if (NTMU_IMPERSONATION_E_TRUSTEDINSTALLER_SVC_DISABLED == hr)
 					{
 						Log(
@@ -998,7 +998,6 @@ cleanup:
 	return true;
 }
 bool CPack::CreateReversePack(LPCWSTR outPath)
-bool CPack::CreateReversePack(LPCWSTR outPath)
 {
 	WCHAR szOriginalPackIni[MAX_PATH];
 	wcscpy_s(szOriginalPackIni, _szPackFolder);
@@ -1107,7 +1106,7 @@ bool CPack::CreateReversePack(LPCWSTR outPath)
 						cmd += L"\" /y";
 
 						DWORD exitCode;
-						if (SUCCEEDED(WaitForProcess(cmd.c_str(), &exitCode)) && exitCode == 0)
+						if (SUCCEEDED(WaitForProcess(cmd.c_str(), &exitCode, CREATE_NO_WINDOW)) && exitCode == 0)
 						{
 							FILE* fTemp = nullptr;
 							_wfopen_s(&fTemp, szTempReg, L"r, ccs=UTF-16LE");

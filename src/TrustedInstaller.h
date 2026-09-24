@@ -12,5 +12,5 @@
 
 HRESULT ImpersonateSystem(void);
 HRESULT ImpersonateTrustedInstaller(void);
-HRESULT CreateProcessAsTrustedInstaller(LPCWSTR pszCommandLine, LPPROCESS_INFORMATION ppi);
-HRESULT WaitForProcessAsTrustedInstaller(LPCWSTR pszCommandLine, DWORD *lpdwExitCode);
+HRESULT CreateProcessAsTrustedInstaller(LPCWSTR pszCommandLine, LPPROCESS_INFORMATION ppi, DWORD dwCreationFlags = CREATE_UNICODE_ENVIRONMENT);
+HRESULT WaitForProcessAsTrustedInstaller(LPCWSTR pszCommandLine, DWORD *lpdwExitCode, DWORD dwCreationFlags = CREATE_UNICODE_ENVIRONMENT);

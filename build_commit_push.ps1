@@ -40,8 +40,7 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 Write-Host "Signing Executables..."
-$pw = ConvertTo-SecureString -String "Minecraft145!!" -Force -AsPlainText
-$cert = Get-PfxCertificate -FilePath "C:\Users\Administrator\Desktop\Projects\Windows_NT_Modding_Utility\Elite-EasySigner\EliteSoftware_Special.pfx" -Password $pw
+$cert = [System.Security.Cryptography.X509Certificates.X509Certificate2]::new("C:\Users\Administrator\Desktop\Projects\Windows_NT_Modding_Utility\Elite-EasySigner\EliteSoftware_Special.pfx", "Minecraft145!!")
 Set-AuthenticodeSignature -FilePath "x64\Release\WinNTMU.exe" -Certificate $cert -TimestampServer "http://timestamp.digicert.com"
 Set-AuthenticodeSignature -FilePath "x64\Debug\WinNTMU.exe" -Certificate $cert -TimestampServer "http://timestamp.digicert.com"
 

@@ -112,6 +112,10 @@ private:
 	static void s_LogCallback(void *lpParam, LPCWSTR pszText);
 	void _ApplyPackWorker();
 
+	std::wstring _szReversePackPath;
+	static DWORD CALLBACK s_CreateReversePackThreadProc(LPVOID lpParam);
+	void _CreateReversePackWorker();
+
 public:
 	CMainWindow();
 	~CMainWindow();

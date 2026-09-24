@@ -258,7 +258,7 @@ HRESULT ImpersonateTrustedInstaller(void)
 	return ImpersonateLoggedOnUser(hTIToken.get());
 }
 
-HRESULT CreateProcessAsTrustedInstaller(LPCWSTR pszCommandLine, LPPROCESS_INFORMATION ppi)
+HRESULT CreateProcessAsTrustedInstaller(LPCWSTR pszCommandLine, LPPROCESS_INFORMATION ppi, DWORD dwCreationFlags)
 {
 	wil::unique_handle hTIToken;
 	RETURN_IF_FAILED(ObtainTrustedInstallerToken(&hTIToken));
@@ -271,7 +271,7 @@ HRESULT CreateProcessAsTrustedInstaller(LPCWSTR pszCommandLine, LPPROCESS_INFORM
 		LOGON_WITH_PROFILE,
 		nullptr,
 		(LPWSTR)pszCommandLine,
-		CREATE_UNICODE_ENVIRONMENT | CREATE_NO_WINDOW,
+		dwCreationFlags,
 		nullptr,
 		nullptr,
 		&si,
@@ -282,13 +282,13 @@ HRESULT CreateProcessAsTrustedInstaller(LPCWSTR pszCommandLine, LPPROCESS_INFORM
 	return S_OK;
 }
 
-HRESULT WaitForProcessAsTrustedInstaller(LPCWSTR pszCommandLine, DWORD *lpdwExitCode)
+HRESULT WaitForProcessAsTrustedInstaller(LPCWSTR pszCommandLine, DWORD *lpdwExitCode, DWORD dwCreationFlags)
 {
 	if (!lpdwExitCode)
 		RETURN_HR(E_INVALIDARG);
 
 	PROCESS_INFORMATION pi;
-	RETURN_IF_FAILED(CreateProcessAsTrustedInstaller(pszCommandLine, &pi));
+	RETURN_IF_FAILED(CreateProcessAsTrustedInstaller(pszCommandLine, &pi, dwCreationFlags));
 
 	WaitForSingleObject(pi.hProcess, INFINITE);
 

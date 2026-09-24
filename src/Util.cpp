@@ -73,7 +73,7 @@ void ParentCenteredRect(
 	lprc->bottom = y + cx;
 }
 
-HRESULT WaitForProcess(LPCWSTR pszCommandLine, DWORD *lpdwExitCode)
+HRESULT WaitForProcess(LPCWSTR pszCommandLine, DWORD *lpdwExitCode, DWORD dwCreationFlags)
 {
 	if (!lpdwExitCode)
 		RETURN_HR(E_INVALIDARG);
@@ -86,7 +86,7 @@ HRESULT WaitForProcess(LPCWSTR pszCommandLine, DWORD *lpdwExitCode)
 		nullptr,
 		nullptr,
 		FALSE,
-		CREATE_NO_WINDOW,
+		dwCreationFlags,
 		nullptr,
 		nullptr,
 		&si,
