@@ -1039,7 +1039,41 @@ bool CPack::CreateReversePack(LPCWSTR outPath, void *lpParam, PackApplyProgressC
 		Log(L"Failed to create pack.ini '%s'", szPackIni);
 		return false;
 	}
-	fwprintf(fIni, L"[Pack]\nName = %s (Reverse)\nAuthor = WinNTMU\nVersion = 1.0\n\n", _name.c_str());
+	fwprintf(fIni, L"[Pack]\nName = %s (Reverse)\nAuthor = WinNTMU\nVersion = 1.0\n", _name.c_str());
+
+	if (!_previewPath.empty())
+	{
+		LPCWSTR relPath = _previewPath.c_str() + wcslen(_szPackFolder);
+		if (*relPath == L'\\' || *relPath == L'/') relPath++;
+		fwprintf(fIni, L"Preview = %s\n", relPath);
+		
+		WCHAR szBackupDest[MAX_PATH];
+		wcscpy_s(szBackupDest, outPath);
+		PathCchAppend(szBackupDest, MAX_PATH, relPath);
+		WCHAR szBackupDestDir[MAX_PATH];
+		wcscpy_s(szBackupDestDir, szBackupDest);
+		PathCchRemoveFileSpec(szBackupDestDir, MAX_PATH);
+		SHCreateDirectoryExW(NULL, szBackupDestDir, nullptr);
+		CopyFileW(_previewPath.c_str(), szBackupDest, FALSE);
+	}
+
+	if (!_readmePath.empty())
+	{
+		LPCWSTR relPath = _readmePath.c_str() + wcslen(_szPackFolder);
+		if (*relPath == L'\\' || *relPath == L'/') relPath++;
+		fwprintf(fIni, L"Readme = %s\n", relPath);
+		
+		WCHAR szBackupDest[MAX_PATH];
+		wcscpy_s(szBackupDest, outPath);
+		PathCchAppend(szBackupDest, MAX_PATH, relPath);
+		WCHAR szBackupDestDir[MAX_PATH];
+		wcscpy_s(szBackupDestDir, szBackupDest);
+		PathCchRemoveFileSpec(szBackupDestDir, MAX_PATH);
+		SHCreateDirectoryExW(NULL, szBackupDestDir, nullptr);
+		CopyFileW(_readmePath.c_str(), szBackupDest, FALSE);
+	}
+	fwprintf(fIni, L"\n");
+
 
 	// Group items by type to prevent duplicate sections
 	std::vector<const PackItem*> filesItems, resItems, regItems;
