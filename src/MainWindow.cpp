@@ -1135,7 +1135,10 @@ void CMainWindow::_CreateReversePackWorker()
 		SetWindowTextW(_hwndApply, L"Reload Pack");
 	}
 	else
+	{
 		MainWndMsgBox(L"Failed to create reverse pack.", MB_ICONERROR);
+		SetWindowTextW(_hwndApply, _pTranslations->apply_button);
+	}
 
 	_fApplying = false;
 
@@ -1240,6 +1243,7 @@ void CMainWindow::_ApplyPackWorker()
 	{
 		SendMessageW(_hwndProgress, PBM_SETSTATE, PBST_ERROR, 0);
 		MainWndMsgBox(_pTranslations->pack_apply_failed, MB_ICONERROR);
+		SetWindowTextW(_hwndApply, _pTranslations->apply_button);
 	}
 
 	_fApplying = false;

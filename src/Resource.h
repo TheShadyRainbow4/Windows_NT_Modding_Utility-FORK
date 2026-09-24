@@ -4,9 +4,9 @@
 #define STRINGIZE(s)  STRINGIZE_(s)
 
 #define VER_MAJOR                2
-#define VER_MINOR                9
-#define VER_REVISION             19
-#define VER_BUILD                19
+#define VER_MINOR                10
+#define VER_REVISION             20
+#define VER_BUILD                20
 
 #define VER_STRING \
     STRINGIZE(VER_MAJOR) "." STRINGIZE(VER_MINOR) "." STRINGIZE(VER_BUILD) "." STRINGIZE(VER_REVISION)
