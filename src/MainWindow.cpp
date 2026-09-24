@@ -1119,7 +1119,8 @@ void CMainWindow::_CreateReversePackWorker()
 
 	EnableMenuItem(hmenu, IDM_FILEEXIT, MF_BYCOMMAND | MF_GRAYED | MF_DISABLED);
 	EnableMenuItem(hmenuSystem, SC_CLOSE, MF_BYCOMMAND | MF_GRAYED | MF_DISABLED);
-	EnableWindow(_hwndApply, FALSE);
+	EnableWindow(_hwndApply, TRUE);
+	SetWindowTextW(_hwndApply, L"Cancel");
 	EnableWindow(_hwndOptions, FALSE);
 
 	DWORD dwCallbackID;
@@ -1157,15 +1158,22 @@ void CMainWindow::s_LogCallback(void *lpParam, LPCWSTR pszText)
 	HWND hwnd = pThis->_hwndText;
 	size_t length = GetWindowTextLengthW(hwnd) + 1;
 	LPWSTR pszBuffer = new WCHAR[length];
-	GetWindowTextW(hwnd, pszBuffer, length);
-	std::wstring newText = pszBuffer;
 	delete[] pszBuffer;
-	newText += pszText;
+	std::wstring newText = pszText;
 	newText += L"\r\n";
-	SetWindowTextW(hwnd, newText.c_str());
+	int ndx = GetWindowTextLengthW(hwnd);
+	SendMessageW(hwnd, EM_SETSEL, (WPARAM)ndx, (LPARAM)ndx);
+	SendMessageW(hwnd, EM_REPLACESEL, 0, (LPARAM)newText.c_str());
 
-	if (pThis->_hwndStatusBar)
-		SendMessageW(pThis->_hwndStatusBar, SB_SETTEXTW, 0, (LPARAM)pszText);
+	if (pThis->_hwndStatusBar) {
+		if (wcsstr(pszText, L"Backing up file") || wcsstr(pszText, L"Copying file")) {
+			SendMessageW(pThis->_hwndStatusBar, SB_SETTEXTW, 0, (LPARAM)L"Copying files...");
+		} else if (wcsstr(pszText, L"Processing registry") || wcsstr(pszText, L"Exporting root registry") || wcsstr(pszText, L"Applying registry")) {
+			SendMessageW(pThis->_hwndStatusBar, SB_SETTEXTW, 0, (LPARAM)L"Gathering registry info...");
+		} else if (wcsstr(pszText, L"Starting reverse pack") || wcsstr(pszText, L"Reverse pack generation completed") || wcsstr(pszText, L"All done")) {
+			SendMessageW(pThis->_hwndStatusBar, SB_SETTEXTW, 0, (LPARAM)L"Ready");
+		}
+	}
 }
 
 void CMainWindow::_ApplyPackWorker()
@@ -1181,7 +1189,8 @@ void CMainWindow::_ApplyPackWorker()
 
 	EnableMenuItem(hmenu, IDM_FILEEXIT, MF_BYCOMMAND | MF_GRAYED | MF_DISABLED);
 	EnableMenuItem(hmenuSystem, SC_CLOSE, MF_BYCOMMAND | MF_GRAYED | MF_DISABLED);
-	EnableWindow(_hwndApply, FALSE);
+	EnableWindow(_hwndApply, TRUE);
+	SetWindowTextW(_hwndApply, L"Cancel");
 	EnableWindow(_hwndOptions, FALSE);
 
 	DWORD dwCallbackID;

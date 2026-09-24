@@ -724,6 +724,7 @@ bool CPack::Apply(void *lpParam, PackApplyProgressCallback pfnCallback)
 		}
 	}
 
+	_bCancel = false;
 	size_t totalItems = secs.size();
 	size_t processedItems = 0;
 	for (const auto &sec : secs)
@@ -796,7 +797,8 @@ bool CPack::Apply(void *lpParam, PackApplyProgressCallback pfnCallback)
 					}
 
 					processedItems++;
-					pfnCallback(lpParam, processedItems, totalItems);
+					if (_bCancel) { Log(L"Pack application cancelled."); return false; }
+			pfnCallback(lpParam, processedItems, totalItems);
 				}
 				break;
 			}
@@ -809,7 +811,8 @@ bool CPack::Apply(void *lpParam, PackApplyProgressCallback pfnCallback)
 						return false;
 
 					processedItems++;
-					pfnCallback(lpParam, processedItems, totalItems);
+					if (_bCancel) { Log(L"Pack application cancelled."); return false; }
+			pfnCallback(lpParam, processedItems, totalItems);
 				}
 				break;
 			}
@@ -1009,6 +1012,7 @@ cleanup:
 }
 bool CPack::CreateReversePack(LPCWSTR outPath, void *lpParam, PackApplyProgressCallback pfnProgressCalback)
 {
+	_bCancel = false;
 	Log(L"Starting reverse pack generation at '%s'...", outPath);
 	DWORD dwTotalItems = 0;
 	for (const auto &sec : _sections) dwTotalItems += sec.items.size();
@@ -1033,6 +1037,7 @@ bool CPack::CreateReversePack(LPCWSTR outPath, void *lpParam, PackApplyProgressC
 		{
 			for (const auto &item : sec.items)
 			{
+				if (_bCancel) { Log(L"Reverse pack creation cancelled."); return false; }
 				dwItemsProcessed++;
 				if (pfnProgressCalback) pfnProgressCalback(lpParam, dwItemsProcessed, dwTotalItems);
 				DWORD attr = GetFileAttributesW(item.destFile.c_str());
@@ -1063,10 +1068,15 @@ bool CPack::CreateReversePack(LPCWSTR outPath, void *lpParam, PackApplyProgressC
 				}
 			}
 		}
-		else if (sec.type == PackSectionType::Registry)
+	}
+
+	for (const auto &sec : _sections)
+	{
+		if (sec.type == PackSectionType::Registry)
 		{
 			for (const auto &item : sec.items)
 			{
+				if (_bCancel) { Log(L"Reverse pack creation cancelled."); return false; }
 				dwItemsProcessed++;
 				if (pfnProgressCalback) pfnProgressCalback(lpParam, dwItemsProcessed, dwTotalItems);
 				Log(L"Processing registry file '%s'...", item.sourceFile.c_str());
@@ -1087,8 +1097,20 @@ bool CPack::CreateReversePack(LPCWSTR outPath, void *lpParam, PackApplyProgressC
 						std::wstring key = sLine.substr(1, sLine.length() - 2);
 						if (key.length() > 0 && key[0] == L'-') key = key.substr(1);
 						
-						if (std::find(keys.begin(), keys.end(), key) == keys.end())
+						bool is_subkey = false;
+						for (const auto &rk : keys) {
+							if (key.find(rk + L"\\") == 0 || key == rk) {
+								is_subkey = true;
+								break;
+							}
+						}
+						if (!is_subkey) {
+							// also remove any existing keys that are subkeys of this NEW key
+							keys.erase(std::remove_if(keys.begin(), keys.end(), [&](const std::wstring& existing) {
+								return existing.find(key + L"\\") == 0;
+							}), keys.end());
 							keys.push_back(key);
+						}
 					}
 				}
 				fclose(fReg);
@@ -1118,7 +1140,7 @@ bool CPack::CreateReversePack(LPCWSTR outPath, void *lpParam, PackApplyProgressC
 						GetTempPathW(MAX_PATH, szTempReg);
 						PathCchAppend(szTempReg, MAX_PATH, L"ntmu_temp.reg");
 
-						Log(L"Exporting registry key '%s'...", key.c_str());
+						Log(L"Exporting root registry key '%s'...", key.c_str());
 						std::wstring cmd = L"reg.exe export \"";
 						cmd += key;
 						cmd += L"\" \"";

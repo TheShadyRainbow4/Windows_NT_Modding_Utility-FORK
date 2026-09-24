@@ -1,6 +1,7 @@
 #pragma once
 #include "NTMU.h"
 #include "INI.h"
+#include <atomic>
 #include "translations/pack_errors.h"
 
 class CPack
@@ -39,6 +40,7 @@ private:
 	std::wstring _version;
 	std::wstring _previewPath;
 	std::wstring _readmePath;
+	std::atomic<bool> _bCancel{false};
 	std::vector<PackOption> _options;
 
 	bool _bIgnoreMissingLoad;
@@ -104,6 +106,7 @@ public:
 	static bool ParseOptionString(const std::wstring &s, std::vector<PackOptionDef> &opts);
 
 	void Reset();
+	void Cancel() { _bCancel = true; }
 	bool Load(LPCWSTR pszPath) { return _Load(pszPath, LoadSource::Default); }
 	bool LoadCommandLineDefault() { return _Load(g_szInitialPack, LoadSource::CommandLine); }
 
