@@ -96,6 +96,7 @@ bool CPack::_ConstructPackFilePath(LPCWSTR pszPath, std::wstring &out)
 
 	out = szResult;
 
+	Log(L"Reverse pack generation completed.");
 	return true;
 }
 
@@ -121,6 +122,7 @@ bool CPack::_ConstructExternalFilePath(LPCWSTR pszPath, std::wstring &out)
 	}
 
 	out = szPath;
+	Log(L"Reverse pack generation completed.");
 	return true;
 }
 
@@ -150,6 +152,7 @@ bool CPack::_ValidateOptionValue(PackOption &opt, UINT uValue)
 		MainWndMsgBox(spszError, MB_ICONERROR);
 		return false;
 	}
+	Log(L"Reverse pack generation completed.");
 	return true;
 }
 
@@ -183,6 +186,7 @@ inline bool StringToUInt(const std::wstring &s, UINT *i)
 		return false;
 	}
 	*i = temp;
+	Log(L"Reverse pack generation completed.");
 	return true;
 }
 
@@ -194,6 +198,7 @@ bool CPack::_OptionDefMatches(const std::vector<PackOptionDef> &defs)
 		if (!pOpt || pOpt->uValue != def.uValue)
 			return false;
 	}
+	Log(L"Reverse pack generation completed.");
 	return true;
 }
 
@@ -209,6 +214,7 @@ bool CPack::_ParseMinAndMaxBuilds(const INISection &sec, PackSection &psec)
 	if (!maxBuild.empty() && !StringToUInt(maxBuild, &psec.uMaxBuild))
 		return false;
 
+	Log(L"Reverse pack generation completed.");
 	return true;
 }
 
@@ -291,6 +297,7 @@ bool CPack::_CopyFileWithOldStack(LPCWSTR pszFrom, LPCWSTR pszTo)
 		);
 		return false;
 	}
+	Log(L"Reverse pack generation completed.");
 	return true;
 }
 
@@ -319,6 +326,7 @@ bool CPack::ParseOptionString(const std::wstring &s, std::vector<PackOptionDef> 
 		PackOptionDef optdef = { name, uValue };
 		opts.push_back(optdef);
 	}
+	Log(L"Reverse pack generation completed.");
 	return true;
 }
 
@@ -607,6 +615,7 @@ bool CPack::_Load(LPCWSTR pszPath, LoadSource loadSource)
 		LOG_IF_FAILED(_LoadCommandLineSettings());
 	}
 
+	Log(L"Reverse pack generation completed.");
 	return true;
 }
 
@@ -995,10 +1004,15 @@ cleanup:
 
 	Log(L"All done!");
 
+	Log(L"Reverse pack generation completed.");
 	return true;
 }
-bool CPack::CreateReversePack(LPCWSTR outPath)
+bool CPack::CreateReversePack(LPCWSTR outPath, void *lpParam, PackApplyProgressCallback pfnProgressCalback)
 {
+	Log(L"Starting reverse pack generation at '%s'...", outPath);
+	DWORD dwTotalItems = 0;
+	for (const auto &sec : _sections) dwTotalItems += sec.items.size();
+	DWORD dwItemsProcessed = 0;
 	WCHAR szOriginalPackIni[MAX_PATH];
 	wcscpy_s(szOriginalPackIni, _szPackFolder);
 	PathCchAppend(szOriginalPackIni, MAX_PATH, L"pack.ini");
@@ -1019,6 +1033,8 @@ bool CPack::CreateReversePack(LPCWSTR outPath)
 		{
 			for (const auto &item : sec.items)
 			{
+				dwItemsProcessed++;
+				if (pfnProgressCalback) pfnProgressCalback(lpParam, dwItemsProcessed, dwTotalItems);
 				DWORD attr = GetFileAttributesW(item.destFile.c_str());
 				if (attr == INVALID_FILE_ATTRIBUTES || (attr & FILE_ATTRIBUTE_DIRECTORY))
 				{
@@ -1051,6 +1067,9 @@ bool CPack::CreateReversePack(LPCWSTR outPath)
 		{
 			for (const auto &item : sec.items)
 			{
+				dwItemsProcessed++;
+				if (pfnProgressCalback) pfnProgressCalback(lpParam, dwItemsProcessed, dwTotalItems);
+				Log(L"Processing registry file '%s'...", item.sourceFile.c_str());
 				FILE *fReg = nullptr;
 				_wfopen_s(&fReg, item.sourceFile.c_str(), L"r, ccs=UTF-16LE");
 				if (!fReg) continue;
@@ -1099,6 +1118,7 @@ bool CPack::CreateReversePack(LPCWSTR outPath)
 						GetTempPathW(MAX_PATH, szTempReg);
 						PathCchAppend(szTempReg, MAX_PATH, L"ntmu_temp.reg");
 
+						Log(L"Exporting registry key '%s'...", key.c_str());
 						std::wstring cmd = L"reg.exe export \"";
 						cmd += key;
 						cmd += L"\" \"";
@@ -1135,5 +1155,6 @@ bool CPack::CreateReversePack(LPCWSTR outPath)
 		}
 	}
 
+	Log(L"Reverse pack generation completed.");
 	return true;
 }

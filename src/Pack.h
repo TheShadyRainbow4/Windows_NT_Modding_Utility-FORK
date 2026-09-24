@@ -110,7 +110,7 @@ public:
 	typedef void (*PackApplyProgressCallback)(void *lpParam, DWORD dwItemsProcessed, DWORD dwTotalItems);
 
 	bool Apply(void *lpParam, PackApplyProgressCallback pfnProgressCalback);
-	bool CreateReversePack(LPCWSTR outPath);
+	bool CreateReversePack(LPCWSTR outPath, void *lpParam = nullptr, PackApplyProgressCallback pfnProgressCalback = nullptr);
 
 	std::wstring GetName()
 	{

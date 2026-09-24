@@ -1081,7 +1081,7 @@ void CMainWindow::_ToggleOptionsPlaceholder(bool fStatus)
 void CMainWindow::s_ApplyProgressCallback(void *lpParam, DWORD dwItemsProcessed, DWORD dwTotalItems)
 {
 	CMainWindow *pThis = (CMainWindow *)lpParam;
-	PostMessageW(pThis->_hwndProgress, PBM_DELTAPOS, 100 / dwTotalItems, 0);
+	if (dwTotalItems > 0) PostMessageW(pThis->_hwndProgress, PBM_DELTAPOS, 100 / dwTotalItems, 0);
 }
 
 void CMainWindow::_ApplyPack()
@@ -1127,7 +1127,7 @@ void CMainWindow::_CreateReversePackWorker()
 
 	_fApplying = true;
 
-	if (_pack.CreateReversePack(_szReversePackPath.c_str()))
+	if (_pack.CreateReversePack(_szReversePackPath.c_str(), this, s_ApplyProgressCallback))
 	{
 		PlaySoundW(MAKEINTRESOURCEW(IDR_WAV_COMPLETE), GetModuleHandleW(NULL), SND_RESOURCE | SND_ASYNC);
 		MainWndMsgBox(L"Reverse pack created successfully.", MB_ICONINFORMATION);
@@ -1144,6 +1144,9 @@ void CMainWindow::_CreateReversePackWorker()
 	EnableMenuItem(hmenuSystem, SC_CLOSE, MF_BYCOMMAND | MF_ENABLED);
 	EnableWindow(_hwndApply, TRUE);
 	EnableWindow(_hwndOptions, TRUE);
+
+	SendMessageW(_hwndProgress, PBM_SETSTATE, PBST_NORMAL, 0);
+	SendMessageW(_hwndProgress, PBM_SETPOS, 0, 0);
 }
 
 // static
@@ -1216,7 +1219,7 @@ void CMainWindow::_ApplyPackWorker()
 	{
 		SHCreateDirectoryExW(NULL, szDefaultBackupPath, nullptr);
 	}
-	_pack.CreateReversePack(szDefaultBackupPath);
+	_pack.CreateReversePack(szDefaultBackupPath, this, s_ApplyProgressCallback);
 
 	if (_pack.Apply(this, s_ApplyProgressCallback))
 	{
