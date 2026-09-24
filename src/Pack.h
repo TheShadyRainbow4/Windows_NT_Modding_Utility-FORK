@@ -57,6 +57,7 @@ private:
 	{
 		std::wstring sourceFile;
 		std::wstring destFile;
+		std::wstring originalDestFile;
 	};
 
 	struct PackSection
@@ -67,6 +68,7 @@ private:
 		UINT uMaxBuild;
 		std::vector<PackOptionDef> requires;
 		std::vector<PackItem> items;
+		std::wstring originalName;
 	};
 
 	std::vector<PackSection> _sections;

@@ -449,6 +449,7 @@ bool CPack::_Load(LPCWSTR pszPath, LoadSource loadSource)
 		else if (IsSection("Registry"))
 		{
 			PackSection psec = { PackSectionType::Registry };
+			psec.originalName = sec.name;
 			std::wstring require = sec.GetPropByName(L"Requires");
 			if (!require.empty() && !ParseOptionString(require, psec.requires))
 				return false;
@@ -472,6 +473,7 @@ bool CPack::_Load(LPCWSTR pszPath, LoadSource loadSource)
 				{
 					// Destination (and as such, value name) doesn't matter for registry items
 					PackItem item;
+					item.originalDestFile = val.name;
 					if (!_ConstructPackFilePath(val.value.c_str(), item.sourceFile))
 						return false;
 					psec.items.push_back(item);
@@ -483,6 +485,7 @@ bool CPack::_Load(LPCWSTR pszPath, LoadSource loadSource)
 		else if (IsSection("Files"))
 		{
 			PackSection psec = { PackSectionType::Files };
+			psec.originalName = sec.name;
 			std::wstring require = sec.GetPropByName(L"Requires");
 			if (!require.empty() && !ParseOptionString(require, psec.requires))
 				return false;
@@ -496,6 +499,7 @@ bool CPack::_Load(LPCWSTR pszPath, LoadSource loadSource)
 				if (!IsValue("Requires") && !IsValue("MinBuild") && !IsValue("MaxBuild"))
 				{
 					PackItem item;
+					item.originalDestFile = val.name;
 					if (!_ConstructExternalFilePath(val.name.c_str(), item.destFile))
 						return false;
 					if (!_ConstructPackFilePath(val.value.c_str(), item.sourceFile))
@@ -509,6 +513,7 @@ bool CPack::_Load(LPCWSTR pszPath, LoadSource loadSource)
 		else if (IsSection("Resources"))
 		{
 			PackSection psec = { PackSectionType::Resources };
+			psec.originalName = sec.name;
 			std::wstring require = sec.GetPropByName(L"Requires");
 			if (!require.empty() && !ParseOptionString(require, psec.requires))
 				return false;
@@ -533,6 +538,7 @@ bool CPack::_Load(LPCWSTR pszPath, LoadSource loadSource)
 					}
 
 					PackItem item;
+					item.originalDestFile = val.name;
 					if (!_ConstructPackFilePath(val.value.c_str(), item.sourceFile))
 						return false;
 
@@ -1013,6 +1019,7 @@ cleanup:
 bool CPack::CreateReversePack(LPCWSTR outPath, void *lpParam, PackApplyProgressCallback pfnProgressCalback)
 {
 	_bCancel = false;
+	static bool bAsked = false; bAsked = false;
 	Log(L"Starting reverse pack generation at '%s'...", outPath);
 	DWORD dwTotalItems = 0;
 	for (const auto &sec : _sections) dwTotalItems += sec.items.size();
@@ -1025,11 +1032,70 @@ bool CPack::CreateReversePack(LPCWSTR outPath, void *lpParam, PackApplyProgressC
 	wcscpy_s(szPackIni, outPath);
 	PathCchAppend(szPackIni, MAX_PATH, L"pack.ini");
 
-	if (!CopyFileW(szOriginalPackIni, szPackIni, FALSE))
+	FILE* fIni = nullptr;
+	_wfopen_s(&fIni, szPackIni, L"w, ccs=UTF-16LE");
+	if (!fIni)
 	{
-		Log(L"Failed to copy pack.ini '%s' to '%s'", szOriginalPackIni, szPackIni);
+		Log(L"Failed to create pack.ini '%s'", szPackIni);
 		return false;
 	}
+	fwprintf(fIni, L"[Pack]\nName = %s (Reverse)\nAuthor = WinNTMU\nVersion = 1.0\n\n", _name.c_str());
+
+	// Group items by type to prevent duplicate sections
+	std::vector<const PackItem*> filesItems, resItems, regItems;
+	bool bTrustedInstallerReg = false;
+	for (const auto &sec : _sections)
+	{
+		for (const auto &item : sec.items)
+		{
+			if (sec.type == PackSectionType::Files) filesItems.push_back(&item);
+			else if (sec.type == PackSectionType::Resources) resItems.push_back(&item);
+			else if (sec.type == PackSectionType::Registry)
+			{
+				regItems.push_back(&item);
+				if (sec.flags & PackSectionFlags::TrustedInstaller) bTrustedInstallerReg = true;
+			}
+		}
+	}
+
+	if (!filesItems.empty())
+	{
+		fwprintf(fIni, L"[Files]\n");
+		for (const auto* item : filesItems)
+		{
+			LPCWSTR relPath = item->sourceFile.c_str() + wcslen(_szPackFolder);
+			if (*relPath == L'\\' || *relPath == L'/') relPath++;
+			fwprintf(fIni, L"%s = %s\n", item->originalDestFile.c_str(), relPath);
+		}
+		fwprintf(fIni, L"\n");
+	}
+
+	if (!resItems.empty())
+	{
+		fwprintf(fIni, L"[Resources]\n");
+		for (const auto* item : resItems)
+		{
+			LPCWSTR relPath = item->sourceFile.c_str() + wcslen(_szPackFolder);
+			if (*relPath == L'\\' || *relPath == L'/') relPath++;
+			fwprintf(fIni, L"%s = %s\n", item->originalDestFile.c_str(), relPath);
+		}
+		fwprintf(fIni, L"\n");
+	}
+
+	if (!regItems.empty())
+	{
+		fwprintf(fIni, L"[Registry]\n");
+		if (bTrustedInstallerReg) fwprintf(fIni, L"TrustedInstaller = 1\n");
+		for (const auto* item : regItems)
+		{
+			LPCWSTR relPath = item->sourceFile.c_str() + wcslen(_szPackFolder);
+			if (*relPath == L'\\' || *relPath == L'/') relPath++;
+			fwprintf(fIni, L"%s = %s\n", item->originalDestFile.c_str(), relPath);
+		}
+		fwprintf(fIni, L"\n");
+	}
+	fclose(fIni);
+
 
 	for (const auto &sec : _sections)
 	{
@@ -1043,6 +1109,41 @@ bool CPack::CreateReversePack(LPCWSTR outPath, void *lpParam, PackApplyProgressC
 				DWORD attr = GetFileAttributesW(item.destFile.c_str());
 				if (attr == INVALID_FILE_ATTRIBUTES || (attr & FILE_ATTRIBUTE_DIRECTORY))
 				{
+					// Ask user what to do about missing file
+					static bool bAsked = false;
+					static bool bRemove = true;
+					if (!bAsked)
+					{
+						std::wstring errorMsg = L"The pack specifies a file which does not natively exist on your system:\n" + item.destFile;
+						errorMsg += L"\n\nSince it doesn't exist, it cannot be backed up into the reverse pack.";
+						errorMsg += L"\n\nWould you like to automatically remove all such missing files from the reverse pack's pack.ini? (Selecting NO will create 0-byte dummy files instead to prevent apply errors)";
+						int result = MessageBoxW(GetActiveWindow(), errorMsg.c_str(), L"Missing File", MB_ICONWARNING | MB_YESNOCANCEL);
+						if (result == IDCANCEL) return false;
+						bRemove = (result == IDYES);
+						bAsked = true;
+					}
+					
+					if (bRemove)
+					{
+						LPCWSTR szSecName = (sec.type == PackSectionType::Files) ? L"Files" : (sec.type == PackSectionType::Resources) ? L"Resources" : L"Registry"; WritePrivateProfileStringW(szSecName, item.originalDestFile.c_str(), nullptr, szPackIni);
+						Log(L"Removed missing file from reverse pack config: '%s'", item.destFile.c_str());
+					}
+					else
+					{
+						LPCWSTR relPath = item.sourceFile.c_str() + wcslen(_szPackFolder);
+						if (*relPath == L'\\' || *relPath == L'/') relPath++;
+						WCHAR szBackupDest[MAX_PATH];
+						wcscpy_s(szBackupDest, outPath);
+						PathCchAppend(szBackupDest, MAX_PATH, relPath);
+						WCHAR szBackupDestDir[MAX_PATH];
+						wcscpy_s(szBackupDestDir, szBackupDest);
+						PathCchRemoveFileSpec(szBackupDestDir, MAX_PATH);
+						SHCreateDirectoryExW(NULL, szBackupDestDir, nullptr);
+						FILE* fDummy = nullptr;
+						_wfopen_s(&fDummy, szBackupDest, L"w");
+						if (fDummy) fclose(fDummy);
+						Log(L"Created empty dummy file for missing file: '%s'", item.destFile.c_str());
+					}
 					continue;
 				}
 
